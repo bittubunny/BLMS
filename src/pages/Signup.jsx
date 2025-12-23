@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Signup.css";
 
+const API_URL = import.meta.env.VITE_API_URL; // Use environment variable
+
 const Signup = () => {
   const [form, setForm] = useState({
     name: "",
@@ -17,7 +19,7 @@ const Signup = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/signup", {
+      const res = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -31,6 +33,7 @@ const Signup = () => {
         alert(data.message);
       }
     } catch (err) {
+      console.error(err);
       alert("Server error. Please try again.");
     }
   };
