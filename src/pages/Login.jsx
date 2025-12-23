@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Login = () => {
   const navigate = useNavigate();
 
@@ -18,7 +20,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -27,10 +29,10 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // ✅ Keep full user (optional)
+        // Store user
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        // ✅ REQUIRED for LMS (progress, courses, quiz)
+        // Required for LMS logic
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
@@ -44,6 +46,7 @@ const Login = () => {
         alert(data.message);
       }
     } catch (err) {
+      console.error(err);
       alert("Server error. Please try again.");
     }
   };
