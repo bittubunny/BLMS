@@ -1,0 +1,60 @@
+.course-player {
+  padding: 40px;
+  max-width: 800px;
+  margin: auto;
+}
+
+.progress-bar {
+  height: 10px;
+  background: #ddd;
+  border-radius: 6px;
+  margin: 20px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4fc3f7;
+  border-radius: 6px;
+}
+
+.topic {
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.topic summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.topic p {
+  margin: 10px 0;
+}
+
+.topic button {
+  padding: 6px 12px;
+  background: #4fc3f7;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.quiz-btn {
+  margin-top: 30px;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background: #00c853;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.quiz-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

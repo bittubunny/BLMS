@@ -1,0 +1,28 @@
+.admin-login,
+.add-course {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.admin-login input,
+.add-course input,
+.add-course textarea {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 10px;
+}
+
+.admin-login button,
+.add-course button {
+  width: 100%;
+  padding: 12px;
+  background: #4fc3f7;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}

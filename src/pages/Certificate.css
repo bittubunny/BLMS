@@ -1,0 +1,106 @@
+.certificate {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+  background: #f0f2f5;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.certificate-content {
+  position: relative;
+  background: #fff;
+  width: 900px;
+  max-width: 95%;
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  border: 5px solid #1976d2;
+}
+
+.certificate-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 10px;
+}
+
+.certificate-content h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 15px 0;
+  color: #2c3e50;
+}
+
+.certificate-content h3 {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 10px 0 30px;
+  color: #34495e;
+}
+
+.certificate-content p {
+  font-size: 16px;
+  color: #555;
+  margin: 8px 0;
+}
+
+.certificate-content .verify {
+  font-size: 14px;
+  margin-top: 25px;
+  font-weight: 500;
+  color: #555;
+}
+
+.certificate-content .certificate-locked {
+  color: red;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.certificate-content .watermark {
+  position: absolute;
+  font-size: 120px;
+  color: rgba(0, 0, 0, 0.05);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  pointer-events: none;
+}
+
+.certificate-content button {
+  margin-top: 30px;
+  padding: 14px 28px;
+  font-size: 16px;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.certificate-content button:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .certificate-content {
+    padding: 40px 20px;
+  }
+
+  .certificate-content h1 {
+    font-size: 28px;
+  }
+
+  .certificate-content h2 {
+    font-size: 22px;
+  }
+
+  .certificate-content h3 {
+    font-size: 20px;
+  }
+}

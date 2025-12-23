@@ -1,0 +1,124 @@
+.dashboard {
+  padding: 60px;
+  background: #f9f9f9;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+/* Headings */
+.dashboard h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.dashboard h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #444;
+}
+
+/* Profile Section */
+.profile-section {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.profile-section p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.profile-section ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.edit-profile-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.edit-profile-btn:hover {
+  background: #43a047;
+}
+
+/* Course Cards */
+.dash-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dash-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+.dash-card p {
+  margin: 4px 0;
+  color: #555;
+  font-size: 15px;
+}
+
+/* Certificate Link */
+.dash-card a {
+  text-decoration: none;
+  background: #4fc3f7;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.dash-card a:hover {
+  background: #39b0e0;
+}
+
+/* Locked Certificate */
+.dash-card span {
+  color: #c62828;
+  font-weight: 600;
+}
+
+/* Empty State */
+.dashboard p {
+  color: #777;
+  font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 30px 20px;
+  }
+
+  .dash-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .dash-card a {
+    width: 100%;
+    text-align: center;
+  }
+}

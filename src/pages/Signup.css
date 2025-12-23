@@ -1,0 +1,106 @@
+/* ===== GLOBAL LAYOUT ===== */
+.auth-page {
+  display: grid;
+  grid-template-columns: minmax(380px, 480px) 1fr;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== LEFT (FORM) ===== */
+.auth-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(120deg, #667eea, #764ba2);
+  padding: 40px 20px;
+}
+
+/* ===== RIGHT (BRANDING) ===== */
+.auth-right {
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    radial-gradient(circle at top right, #764ba2, #000);
+  color: #fff;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 80px;
+}
+
+/* BRAND TEXT */
+.auth-right h1 {
+  font-size: clamp(72px, 10vw, 140px);
+  font-weight: 800;
+  letter-spacing: 10px;
+  margin-bottom: 12px;
+}
+
+.auth-right p {
+  font-size: clamp(18px, 2vw, 24px);
+  max-width: 480px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* ===== CARD ===== */
+.auth-card {
+  width: 100%;
+  max-width: 360px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+}
+
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 12px;
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.auth-card button:hover {
+  background: #5563d6;
+}
+
+/* SWITCH LINK */
+.switch-text {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.switch-text a {
+  color: #667eea;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-right {
+    display: none;
+  }
+}

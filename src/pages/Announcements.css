@@ -1,0 +1,62 @@
+.announcements-page {
+  padding: 60px;
+  background: #f9fafc;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.announcements-page h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: #2c3e50;
+}
+
+.empty {
+  color: #777;
+}
+
+.announcement-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.announcement-card h3 {
+  margin: 10px 0;
+  color: #333;
+}
+
+.announcement-card p {
+  color: #555;
+  line-height: 1.6;
+}
+
+.announcement-card small {
+  color: #888;
+}
+
+.tag {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.tag.course {
+  background: #4caf50;
+}
+
+.tag.update {
+  background: #2196f3;
+}
+
+.tag.news {
+  background: #ff9800;
+}
