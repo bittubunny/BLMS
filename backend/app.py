@@ -2,11 +2,23 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User
+import os
 
 app = Flask(__name__)
-CORS(app)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+# ---------------- CORS ----------------
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "http://localhost:5173",
+            "https://YOUR-VERCEL-APP.vercel.app"  # 🔁 CHANGE THIS
+        ]
+    }
+})
+
+# ---------------- DATABASE ----------------
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "database.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -17,7 +29,8 @@ with app.app_context():
 # ---------------- SIGNUP ----------------
 @app.route("/signup", methods=["POST"])
 def signup():
-    data = request.json
+    data = request.get_json()
+
     name = data.get("name")
     email = data.get("email")
     password = data.get("password")
@@ -48,12 +61,17 @@ def signup():
         }
     }), 201
 
+
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.json
+    data = request.get_json()
+
     email = data.get("email")
     password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"message": "Email and password required"}), 400
 
     user = User.query.filter_by(email=email).first()
 
@@ -63,11 +81,19 @@ def login():
     return jsonify({
         "message": "Login successful",
         "user": {
-            "id": user.id,        # 👈 use this ID everywhere
+            "id": user.id,
             "name": user.name,
             "email": user.email
         }
     }), 200
 
+
+# ---------------- HEALTH CHECK ----------------
+@app.route("/")
+def home():
+    return jsonify({"status": "BLMS backend running"}), 200
+
+
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
