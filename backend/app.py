@@ -11,7 +11,7 @@ CORS(app, resources={
     r"/*": {
         "origins": [
             "http://localhost:5173",
-            "https://blms-three.vercel.app/"  # 🔁 CHANGE THIS
+            "https://blms-6exlguhvw-bharath-chelimallas-projects.vercel.app"  # 🔁 CHANGE THIS
         ]
     }
 })
@@ -97,4 +97,5 @@ def home():
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
 
