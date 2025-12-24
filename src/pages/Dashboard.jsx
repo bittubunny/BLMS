@@ -16,13 +16,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCoursesAndProgress = async () => {
       try {
-        // 1️⃣ Fetch all courses
+        // Fetch all courses from backend
         const res = await fetch(`${API_BASE}/courses`);
         if (!res.ok) throw new Error("Failed to fetch courses");
         const coursesData = await res.json();
         setCourses(coursesData);
 
-        // 2️⃣ Fetch user progress for each course
+        // Fetch user progress for all courses
         const progressData = {};
         const certData = {};
 
