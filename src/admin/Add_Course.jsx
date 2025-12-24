@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./Add_Course.css";
 
 const MAX_DESC_LENGTH = 200;
+const API_BASE = "https://blms-fnj5.onrender.com"; // deployed backend
 
 const AddCourse = () => {
   const [auth, setAuth] = useState(false);
@@ -9,7 +10,6 @@ const AddCourse = () => {
   const [password, setPassword] = useState("");
 
   const [courses, setCourses] = useState([]);
-
   const [course, setCourse] = useState({
     title: "",
     description: "",
@@ -20,22 +20,9 @@ const AddCourse = () => {
   });
 
   const [topic, setTopic] = useState({ title: "", content: "" });
-  const [quiz, setQuiz] = useState({
-    question: "",
-    options: "",
-    answer: "",
-  });
+  const [quiz, setQuiz] = useState({ question: "", options: "", answer: "" });
 
-  const [announcement, setAnnouncement] = useState({
-    title: "",
-    message: "",
-    type: "update",
-  });
-
-  const API_BASE = "https://blms-fnj5.onrender.com"; // deployed backend
- // replace with deployed backend URL
-
-  /* ---------- LOAD COURSES FROM BACKEND ---------- */
+  /* ---------- FETCH COURSES ---------- */
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
@@ -64,18 +51,35 @@ const AddCourse = () => {
     }
   };
 
+  /* ---------- ADD TOPIC ---------- */
+  const addTopic = () => {
+    if (!topic.title || !topic.content) return;
+    setCourse({ ...course, topics: [...course.topics, topic] });
+    setTopic({ title: "", content: "" });
+  };
+
+  /* ---------- ADD QUIZ ---------- */
+  const addQuiz = () => {
+    if (!quiz.question || !quiz.options || !quiz.answer) return;
+    const formattedQuiz = {
+      question: quiz.question,
+      options: quiz.options.split(",").map((o) => o.trim()),
+      answer: quiz.answer,
+    };
+    setCourse({ ...course, quiz: [...course.quiz, formattedQuiz] });
+    setQuiz({ question: "", options: "", answer: "" });
+  };
+
   /* ---------- ADD COURSE ---------- */
   const addCourse = async () => {
     if (!course.title || !course.description || !course.duration) {
       alert("Please fill all required fields");
       return;
     }
-
     if (course.description.length > MAX_DESC_LENGTH) {
       alert(`Description must be under ${MAX_DESC_LENGTH} characters`);
       return;
     }
-
     if (course.topics.length === 0) {
       alert("Add at least one topic");
       return;
@@ -90,7 +94,8 @@ const AddCourse = () => {
 
       if (!res.ok) throw new Error("Failed to add course");
 
-      alert("Course added successfully!");
+      const data = await res.json();
+      alert(`Course "${data.course.title}" added successfully!`);
       setCourse({ title: "", description: "", duration: "", image: "", topics: [], quiz: [] });
       fetchCourses();
     } catch (err) {
@@ -114,37 +119,7 @@ const AddCourse = () => {
     }
   };
 
-  /* ---------- ADD TOPIC ---------- */
-  const addTopic = () => {
-    if (!topic.title || !topic.content) return;
-
-    setCourse({
-      ...course,
-      topics: [...course.topics, topic],
-    });
-
-    setTopic({ title: "", content: "" });
-  };
-
-  /* ---------- ADD QUIZ ---------- */
-  const addQuiz = () => {
-    if (!quiz.question || !quiz.options || !quiz.answer) return;
-
-    const formattedQuiz = {
-      question: quiz.question,
-      options: quiz.options.split(",").map((o) => o.trim()),
-      answer: quiz.answer,
-    };
-
-    setCourse({
-      ...course,
-      quiz: [...course.quiz, formattedQuiz],
-    });
-
-    setQuiz({ question: "", options: "", answer: "" });
-  };
-
-  /* ---------- MAIN UI ---------- */
+  /* ---------- RENDER UI ---------- */
   if (!auth) {
     return (
       <div className="admin-login">
@@ -159,28 +134,10 @@ const AddCourse = () => {
   return (
     <div className="add-course">
       <h2>Add Course</h2>
-
-      <input
-        placeholder="Course Title"
-        value={course.title}
-        onChange={(e) => setCourse({ ...course, title: e.target.value })}
-      />
-      <input
-        placeholder="Duration (e.g. 12 Weeks)"
-        value={course.duration}
-        onChange={(e) => setCourse({ ...course, duration: e.target.value })}
-      />
-      <input
-        placeholder="Image URL"
-        value={course.image}
-        onChange={(e) => setCourse({ ...course, image: e.target.value })}
-      />
-      <textarea
-        placeholder="Course Description"
-        maxLength={MAX_DESC_LENGTH}
-        value={course.description}
-        onChange={(e) => setCourse({ ...course, description: e.target.value })}
-      />
+      <input placeholder="Course Title" value={course.title} onChange={(e) => setCourse({ ...course, title: e.target.value })} />
+      <input placeholder="Duration" value={course.duration} onChange={(e) => setCourse({ ...course, duration: e.target.value })} />
+      <input placeholder="Image URL" value={course.image} onChange={(e) => setCourse({ ...course, image: e.target.value })} />
+      <textarea placeholder="Course Description" maxLength={MAX_DESC_LENGTH} value={course.description} onChange={(e) => setCourse({ ...course, description: e.target.value })} />
       <p className="char-count">{course.description.length}/{MAX_DESC_LENGTH}</p>
 
       <h3>Add Topics</h3>
