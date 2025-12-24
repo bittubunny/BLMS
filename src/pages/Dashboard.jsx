@@ -1,67 +1,84 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
+const API_BASE = "https://blms-fnj5.onrender.com";
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const [courses, setCourses] = useState([]);
+  const [progress, setProgress] = useState({});
+  const [certificates, setCertificates] = useState({});
+
   if (!user) return <h2>Please login to view dashboard</h2>;
 
-  const progress =
-    JSON.parse(localStorage.getItem(`progress-${user.email}`)) || {
-      courses: {},
-      certificates: {},
+  useEffect(() => {
+    // Fetch all courses
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/courses`);
+        const data = await res.json();
+        setCourses(data);
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+      }
     };
 
-  const profile =
-    JSON.parse(localStorage.getItem(`profile-${user.email}`)) || {};
+    // Fetch user progress for all courses
+    const fetchProgress = async () => {
+      const progressData = {};
+      const certData = {};
+      for (const course of courses) {
+        try {
+          const res = await fetch(`${API_BASE}/progress/${user.id}/${course.id}`);
+          const data = await res.json();
+          progressData[course.id] = {
+            completedTopics: data.completed_topics || [],
+            quizPassed:
+              Object.values(data.quiz_results || {})[0] >=
+              0.6 * (course.quiz?.length || 1),
+            quizScore: Object.values(data.quiz_results || {})[0] || 0,
+            totalQuestions: course.quiz?.length || 0,
+          };
 
-  const coursesData = JSON.parse(localStorage.getItem("courses")) || [];
+          if (progressData[course.id].quizPassed) {
+            certData[course.id] = {
+              courseTitle: course.title,
+              verificationId: `BLMS-${course.title
+                .replace(/\s+/g, "")
+                .substring(0, 5)
+                .toUpperCase()}-${Math.random()
+                .toString(36)
+                .substring(2, 10)
+                .toUpperCase()}`,
+              issuedAt: new Date().toISOString(),
+            };
+          }
+        } catch (err) {
+          console.error("Failed to fetch progress for course:", course.id, err);
+        }
+      }
+      setProgress(progressData);
+      setCertificates(certData);
+    };
 
-  // Helper to get course title by ID
+    fetchCourses().then(fetchProgress);
+  }, [user, courses.length]);
+
   const getCourseTitle = (id) => {
-    const course = coursesData.find((c) => c.id === Number(id));
+    const course = courses.find((c) => c.id === id);
     return course ? course.title : `Course ${id}`;
   };
 
   return (
     <div className="dashboard">
-      {/* Welcome */}
       <h1>Welcome, {user.name}</h1>
 
-      {/* Profile Section */}
-      <div className="profile-section">
-        <h2>Your Profile</h2>
-        {profile.bio && <p><strong>Bio:</strong> {profile.bio}</p>}
-        {profile.gender && <p><strong>Gender:</strong> {profile.gender}</p>}
-        {profile.country && <p><strong>Country:</strong> {profile.country}</p>}
-        {profile.state && <p><strong>State:</strong> {profile.state}</p>}
-        {profile.socialLinks && profile.socialLinks.length > 0 && (
-          <div>
-            <strong>Social Links:</strong>
-            <ul>
-              {profile.socialLinks.map((link, index) => (
-                <li key={index}>
-                  <a href={link} target="_blank" rel="noreferrer">
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <button
-          className="edit-profile-btn"
-          onClick={() => navigate("/edit-profile")}
-        >
-          Edit Profile
-        </button>
-      </div>
-
-      {/* Courses Section */}
       <h2>Completed Courses</h2>
-      {Object.keys(progress.courses).length === 0 && <p>No courses yet</p>}
+      {Object.keys(progress).length === 0 && <p>No courses yet</p>}
 
-      {Object.entries(progress.courses).map(([cid, data]) => (
+      {Object.entries(progress).map(([cid, data]) => (
         <div key={cid} className="dash-card">
           <div>
             <p>
@@ -72,7 +89,7 @@ const Dashboard = () => {
             </p>
           </div>
           <div>
-            {progress.certificates[cid] ? (
+            {certificates[cid] ? (
               <Link to={`/certificate/${cid}`}>View Certificate</Link>
             ) : (
               <span>Certificate Locked</span>
