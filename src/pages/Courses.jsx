@@ -8,17 +8,14 @@ const Courses = () => {
   const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
 
-  // Fetch courses from backend
+  /* ---------- FETCH COURSES FROM BACKEND ---------- */
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
       if (!res.ok) throw new Error("Failed to fetch courses");
 
       const data = await res.json();
-      setCourses(data);
-
-      // Update localStorage so other components see latest courses
-      localStorage.setItem("courses", JSON.stringify(data));
+      setCourses(data); // update state directly from backend
     } catch (err) {
       console.error("Error fetching courses:", err);
       setCourses([]);
