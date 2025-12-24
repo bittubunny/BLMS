@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import "./Add_Course.css";
 
 const MAX_DESC_LENGTH = 200;
-const COURSE_KEY = "courses";
-const ANNOUNCEMENT_KEY = "announcements";
 
 const AddCourse = () => {
   const [auth, setAuth] = useState(false);
@@ -34,11 +32,22 @@ const AddCourse = () => {
     type: "update",
   });
 
-  /* ---------- LOAD DATA ---------- */
+  const API_BASE = "https://blms-fnj5.onrender.com"; // deployed backend
+ // replace with deployed backend URL
+
+  /* ---------- LOAD COURSES FROM BACKEND ---------- */
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/courses`);
+      const data = await res.json();
+      setCourses(data);
+    } catch (err) {
+      console.error("Failed to fetch courses:", err);
+    }
+  };
+
   useEffect(() => {
-    const storedCourses =
-      JSON.parse(localStorage.getItem(COURSE_KEY)) || [];
-    setCourses(storedCourses);
+    fetchCourses();
 
     if (localStorage.getItem("isAdmin") === "true") {
       setAuth(true);
@@ -56,7 +65,7 @@ const AddCourse = () => {
   };
 
   /* ---------- ADD COURSE ---------- */
-  const addCourse = () => {
+  const addCourse = async () => {
     if (!course.title || !course.description || !course.duration) {
       alert("Please fill all required fields");
       return;
@@ -72,61 +81,37 @@ const AddCourse = () => {
       return;
     }
 
-    const updatedCourses = [
-      ...courses,
-      {
-        ...course,
-        id: Date.now(),
-      },
-    ];
+    try {
+      const res = await fetch(`${API_BASE}/courses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(course),
+      });
 
-    setCourses(updatedCourses);
-    localStorage.setItem(
-      COURSE_KEY,
-      JSON.stringify(updatedCourses)
-    );
+      if (!res.ok) throw new Error("Failed to add course");
 
-    /* 🔔 AUTO ANNOUNCEMENT FOR NEW COURSE */
-    const existingAnnouncements =
-      JSON.parse(
-        localStorage.getItem(ANNOUNCEMENT_KEY)
-      ) || [];
-
-    existingAnnouncements.push({
-      id: Date.now(),
-      title: "New Course Launched 🚀",
-      message: `We have launched a new course: "${course.title}". Check it out now!`,
-      type: "course",
-      createdAt: Date.now(),
-    });
-
-    localStorage.setItem(
-      ANNOUNCEMENT_KEY,
-      JSON.stringify(existingAnnouncements)
-    );
-
-    setCourse({
-      title: "",
-      description: "",
-      duration: "",
-      image: "",
-      topics: [],
-      quiz: [],
-    });
-
-    alert("Course added successfully!");
+      alert("Course added successfully!");
+      setCourse({ title: "", description: "", duration: "", image: "", topics: [], quiz: [] });
+      fetchCourses();
+    } catch (err) {
+      console.error(err);
+      alert("Error adding course");
+    }
   };
 
   /* ---------- REMOVE COURSE ---------- */
-  const removeCourse = (id) => {
-    const updatedCourses = courses.filter(
-      (c) => c.id !== id
-    );
-    setCourses(updatedCourses);
-    localStorage.setItem(
-      COURSE_KEY,
-      JSON.stringify(updatedCourses)
-    );
+  const removeCourse = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete course");
+
+      fetchCourses();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting course");
+    }
   };
 
   /* ---------- ADD TOPIC ---------- */
@@ -143,18 +128,11 @@ const AddCourse = () => {
 
   /* ---------- ADD QUIZ ---------- */
   const addQuiz = () => {
-    if (
-      !quiz.question ||
-      !quiz.options ||
-      !quiz.answer
-    )
-      return;
+    if (!quiz.question || !quiz.options || !quiz.answer) return;
 
     const formattedQuiz = {
       question: quiz.question,
-      options: quiz.options
-        .split(",")
-        .map((o) => o.trim()),
+      options: quiz.options.split(",").map((o) => o.trim()),
       answer: quiz.answer,
     };
 
@@ -163,74 +141,21 @@ const AddCourse = () => {
       quiz: [...course.quiz, formattedQuiz],
     });
 
-    setQuiz({
-      question: "",
-      options: "",
-      answer: "",
-    });
+    setQuiz({ question: "", options: "", answer: "" });
   };
 
-  /* ---------- ADD ANNOUNCEMENT ---------- */
-  const addAnnouncement = () => {
-    if (!announcement.title || !announcement.message) {
-      alert("Fill all announcement fields");
-      return;
-    }
-
-    const existing =
-      JSON.parse(
-        localStorage.getItem(ANNOUNCEMENT_KEY)
-      ) || [];
-
-    const updated = [
-      ...existing,
-      {
-        ...announcement,
-        id: Date.now(),
-        createdAt: Date.now(),
-      },
-    ];
-
-    localStorage.setItem(
-      ANNOUNCEMENT_KEY,
-      JSON.stringify(updated)
-    );
-
-    setAnnouncement({
-      title: "",
-      message: "",
-      type: "update",
-    });
-
-    alert("Announcement published!");
-  };
-
-  /* ---------- ADMIN LOGIN UI ---------- */
+  /* ---------- MAIN UI ---------- */
   if (!auth) {
     return (
       <div className="admin-login">
         <h2>Admin Login</h2>
-        <input
-          placeholder="Username"
-          onChange={(e) =>
-            setUsername(e.target.value)
-          }
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-        />
-        <button onClick={loginAdmin}>
-          Login
-        </button>
+        <input placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
+        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+        <button onClick={loginAdmin}>Login</button>
       </div>
     );
   }
 
-  /* ---------- MAIN UI ---------- */
   return (
     <div className="add-course">
       <h2>Add Course</h2>
@@ -238,205 +163,49 @@ const AddCourse = () => {
       <input
         placeholder="Course Title"
         value={course.title}
-        onChange={(e) =>
-          setCourse({
-            ...course,
-            title: e.target.value,
-          })
-        }
+        onChange={(e) => setCourse({ ...course, title: e.target.value })}
       />
-
       <input
         placeholder="Duration (e.g. 12 Weeks)"
         value={course.duration}
-        onChange={(e) =>
-          setCourse({
-            ...course,
-            duration: e.target.value,
-          })
-        }
+        onChange={(e) => setCourse({ ...course, duration: e.target.value })}
       />
-
       <input
         placeholder="Image URL"
         value={course.image}
-        onChange={(e) =>
-          setCourse({
-            ...course,
-            image: e.target.value,
-          })
-        }
+        onChange={(e) => setCourse({ ...course, image: e.target.value })}
       />
-
       <textarea
         placeholder="Course Description"
         maxLength={MAX_DESC_LENGTH}
         value={course.description}
-        onChange={(e) =>
-          setCourse({
-            ...course,
-            description: e.target.value,
-          })
-        }
+        onChange={(e) => setCourse({ ...course, description: e.target.value })}
       />
+      <p className="char-count">{course.description.length}/{MAX_DESC_LENGTH}</p>
 
-      <p className="char-count">
-        {course.description.length}/
-        {MAX_DESC_LENGTH}
-      </p>
-
-      {/* ---------- TOPICS ---------- */}
       <h3>Add Topics</h3>
+      <input placeholder="Topic Title" value={topic.title} onChange={(e) => setTopic({ ...topic, title: e.target.value })} />
+      <textarea placeholder="Topic Content" value={topic.content} onChange={(e) => setTopic({ ...topic, content: e.target.value })} />
+      <button onClick={addTopic}>Add Topic</button>
 
-      <input
-        placeholder="Topic Title"
-        value={topic.title}
-        onChange={(e) =>
-          setTopic({
-            ...topic,
-            title: e.target.value,
-          })
-        }
-      />
-
-      <textarea
-        placeholder="Topic Content"
-        value={topic.content}
-        onChange={(e) =>
-          setTopic({
-            ...topic,
-            content: e.target.value,
-          })
-        }
-      />
-
-      <button onClick={addTopic}>
-        Add Topic
-      </button>
-
-      {/* ---------- QUIZ ---------- */}
       <h3>Add Quiz Questions</h3>
+      <input placeholder="Question" value={quiz.question} onChange={(e) => setQuiz({ ...quiz, question: e.target.value })} />
+      <input placeholder="Options (comma separated)" value={quiz.options} onChange={(e) => setQuiz({ ...quiz, options: e.target.value })} />
+      <input placeholder="Correct Answer" value={quiz.answer} onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })} />
+      <button onClick={addQuiz}>Add Quiz Question</button>
 
-      <input
-        placeholder="Question"
-        value={quiz.question}
-        onChange={(e) =>
-          setQuiz({
-            ...quiz,
-            question: e.target.value,
-          })
-        }
-      />
+      <button className="add-course-btn" onClick={addCourse}>Add Course</button>
 
-      <input
-        placeholder="Options (comma separated)"
-        value={quiz.options}
-        onChange={(e) =>
-          setQuiz({
-            ...quiz,
-            options: e.target.value,
-          })
-        }
-      />
-
-      <input
-        placeholder="Correct Answer"
-        value={quiz.answer}
-        onChange={(e) =>
-          setQuiz({
-            ...quiz,
-            answer: e.target.value,
-          })
-        }
-      />
-
-      <button onClick={addQuiz}>
-        Add Quiz Question
-      </button>
-
-      <button
-        className="add-course-btn"
-        onClick={addCourse}
-      >
-        Add Course
-      </button>
-
-      {/* ---------- ANNOUNCEMENTS ---------- */}
-      <h2>Post Announcement</h2>
-
-      <input
-        placeholder="Announcement Title"
-        value={announcement.title}
-        onChange={(e) =>
-          setAnnouncement({
-            ...announcement,
-            title: e.target.value,
-          })
-        }
-      />
-
-      <textarea
-        placeholder="Announcement message"
-        value={announcement.message}
-        onChange={(e) =>
-          setAnnouncement({
-            ...announcement,
-            message: e.target.value,
-          })
-        }
-      />
-
-      <select
-        value={announcement.type}
-        onChange={(e) =>
-          setAnnouncement({
-            ...announcement,
-            type: e.target.value,
-          })
-        }
-      >
-        <option value="update">
-          Platform Update
-        </option>
-        <option value="course">
-          New Course
-        </option>
-        <option value="news">News</option>
-      </select>
-
-      <button
-        className="add-course-btn"
-        onClick={addAnnouncement}
-      >
-        Publish Announcement
-      </button>
-
-      {/* ---------- EXISTING COURSES ---------- */}
       <h3>Existing Courses</h3>
-
-      {courses.length === 0 && (
-        <p>No courses added yet</p>
-      )}
-
+      {courses.length === 0 && <p>No courses added yet</p>}
       {courses.map((c) => (
-        <div
-          className="admin-course-item"
-          key={c.id}
-        >
+        <div className="admin-course-item" key={c.id}>
           <div>
             <strong>{c.title}</strong>
             <p>{c.duration}</p>
-            <p>
-              {c.topics.length} Topics |{" "}
-              {c.quiz.length} Quiz Questions
-            </p>
+            <p>{c.topics.length} Topics | {c.quiz.length} Quiz Questions</p>
           </div>
-          <button
-            className="remove-btn"
-            onClick={() => removeCourse(c.id)}
-          >
-            ❌ Remove
-          </button>
+          <button className="remove-btn" onClick={() => removeCourse(c.id)}>❌ Remove</button>
         </div>
       ))}
     </div>
