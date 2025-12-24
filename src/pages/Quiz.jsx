@@ -22,7 +22,7 @@ const Quiz = () => {
 
     const fetchCourseAndProgress = async () => {
       try {
-        // Fetch course details
+        // Fetch the specific course from backend
         const res = await fetch(`${API_BASE}/courses/${id}`);
         if (!res.ok) throw new Error("Course not found");
         const selectedCourse = await res.json();
@@ -73,7 +73,7 @@ const Quiz = () => {
       setQuizLocked(true);
       if (finalScore / quiz.length >= 0.6) setCertUnlocked(true);
 
-      // Save quiz result to backend
+      // Save quiz result to backend globally
       try {
         await fetch(`${API_BASE}/progress/${user.id}/${course.id}/quiz`, {
           method: "POST",
