@@ -5,15 +5,12 @@ from models import db, User, Course, UserProgress
 import os
 import json
 import time
+import uuid
 
 app = Flask(__name__)
 
 # ---------------- CORS ----------------
-CORS(
-    app,
-    resources={r"/*": {"origins": "*"}},
-    supports_credentials=True
-)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # ---------------- DATABASE ----------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -44,18 +41,11 @@ def signup():
 
     hashed_password = generate_password_hash(password)
     user = User(name=name, email=email, password=hashed_password)
-
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({
-        "message": "User registered successfully",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
-    }), 201
+    return jsonify({"message": "User registered successfully",
+                    "user": {"id": user.id, "name": user.name, "email": user.email}}), 201
 
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["POST"])
@@ -66,7 +56,6 @@ def login():
 
     email = data.get("email")
     password = data.get("password")
-
     if not email or not password:
         return jsonify({"message": "Email and password required"}), 400
 
@@ -74,14 +63,8 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({"message": "Invalid credentials"}), 401
 
-    return jsonify({
-        "message": "Login successful",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
-    }), 200
+    return jsonify({"message": "Login successful",
+                    "user": {"id": user.id, "name": user.name, "email": user.email}}), 200
 
 # ---------------- HEALTH CHECK ----------------
 @app.route("/", methods=["GET"])
@@ -89,8 +72,6 @@ def home():
     return jsonify({"status": "BLMS backend running"}), 200
 
 # ---------------- COURSES ----------------
-
-# Add new course
 @app.route("/courses", methods=["POST"])
 def add_course():
     data = request.get_json()
@@ -107,66 +88,51 @@ def add_course():
     if not title or not description or not duration:
         return jsonify({"message": "Title, description, and duration required"}), 400
 
-    course = Course(
-        title=title,
-        description=description,
-        duration=duration,
-        image=image,
-        topics=json.dumps(topics),
-        quiz=json.dumps(quiz),
-        created_at=int(time.time())
-    )
-
+    course = Course(title=title,
+                    description=description,
+                    duration=duration,
+                    image=image,
+                    topics=json.dumps(topics),
+                    quiz=json.dumps(quiz),
+                    created_at=int(time.time()))
     db.session.add(course)
     db.session.commit()
 
-    return jsonify({
-        "message": "Course added successfully",
-        "course": {
-            "id": course.id,
-            "title": course.title,
-            "description": course.description,
-            "duration": course.duration,
-            "image": course.image,
-            "topics": topics,
-            "quiz": quiz
-        }
-    }), 201
+    return jsonify({"message": "Course added successfully",
+                    "course": {"id": course.id, "title": course.title,
+                               "description": course.description,
+                               "duration": course.duration,
+                               "image": course.image,
+                               "topics": topics,
+                               "quiz": quiz}}), 201
 
-# Get all courses
 @app.route("/courses", methods=["GET"])
 def get_courses():
     courses = Course.query.order_by(Course.created_at.desc()).all()
     result = []
     for c in courses:
-        result.append({
-            "id": c.id,
-            "title": c.title,
-            "description": c.description,
-            "duration": c.duration,
-            "image": c.image,
-            "topics": json.loads(c.topics),
-            "quiz": json.loads(c.quiz)
-        })
+        result.append({"id": c.id,
+                       "title": c.title,
+                       "description": c.description,
+                       "duration": c.duration,
+                       "image": c.image,
+                       "topics": json.loads(c.topics or "[]"),
+                       "quiz": json.loads(c.quiz or "[]")})
     return jsonify(result), 200
 
-# Get single course
 @app.route("/courses/<string:course_id>", methods=["GET"])
 def get_course(course_id):
     course = Course.query.get(course_id)
     if not course:
         return jsonify({"message": "Course not found"}), 404
-    return jsonify({
-        "id": course.id,
-        "title": course.title,
-        "description": course.description,
-        "duration": course.duration,
-        "image": course.image,
-        "topics": json.loads(course.topics),
-        "quiz": json.loads(course.quiz)
-    }), 200
+    return jsonify({"id": course.id,
+                    "title": course.title,
+                    "description": course.description,
+                    "duration": course.duration,
+                    "image": course.image,
+                    "topics": json.loads(course.topics or "[]"),
+                    "quiz": json.loads(course.quiz or "[]")}), 200
 
-# Delete a course
 @app.route("/courses/<string:course_id>", methods=["DELETE"])
 def delete_course(course_id):
     course = Course.query.get(course_id)
@@ -178,8 +144,6 @@ def delete_course(course_id):
     return jsonify({"message": "Course deleted"}), 200
 
 # ---------------- USER PROGRESS ----------------
-
-# Update topic completion
 @app.route("/progress/<string:user_id>/<string:course_id>/topic", methods=["POST"])
 def update_topic(user_id, course_id):
     data = request.get_json()
@@ -200,7 +164,6 @@ def update_topic(user_id, course_id):
     db.session.commit()
     return jsonify({"message": "Topic marked as completed"}), 200
 
-# Update quiz result
 @app.route("/progress/<string:user_id>/<string:course_id>/quiz", methods=["POST"])
 def update_quiz(user_id, course_id):
     data = request.get_json()
@@ -211,7 +174,8 @@ def update_quiz(user_id, course_id):
 
     progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
     if not progress:
-        progress = UserProgress(user_id=user_id, course_id=course_id, quiz_results=json.dumps({quiz_id: score}))
+        progress = UserProgress(user_id=user_id, course_id=course_id,
+                                quiz_results=json.dumps({quiz_id: score}))
         db.session.add(progress)
     else:
         quiz_results = json.loads(progress.quiz_results or "{}")
@@ -221,17 +185,47 @@ def update_quiz(user_id, course_id):
     db.session.commit()
     return jsonify({"message": "Quiz score updated"}), 200
 
-# Get user progress for a course
 @app.route("/progress/<string:user_id>/<string:course_id>", methods=["GET"])
 def get_progress(user_id, course_id):
     progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
     if not progress:
         return jsonify({"completed_topics": [], "quiz_results": {}, "certificate_earned": False}), 200
-    return jsonify({
-        "completed_topics": json.loads(progress.completed_topics or "[]"),
-        "quiz_results": json.loads(progress.quiz_results or "{}"),
-        "certificate_earned": progress.certificate_earned
-    }), 200
+    return jsonify({"completed_topics": json.loads(progress.completed_topics or "[]"),
+                    "quiz_results": json.loads(progress.quiz_results or "{}"),
+                    "certificate_earned": progress.certificate_earned}), 200
+
+# ---------------- ANNOUNCEMENTS ----------------
+# For simplicity, we store announcements in memory (or you can create a DB table)
+announcements_store = []
+
+@app.route("/announcements", methods=["POST"])
+def add_announcement():
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+
+    title = data.get("title")
+    message = data.get("message")
+    type_ = data.get("type", "update")
+
+    if not title or not message:
+        return jsonify({"message": "Title and message required"}), 400
+
+    announcement = {
+        "id": str(uuid.uuid4()),
+        "title": title,
+        "message": message,
+        "type": type_,
+        "createdAt": int(time.time())
+    }
+    announcements_store.append(announcement)
+    return jsonify({"message": "Announcement added", "announcement": announcement}), 201
+
+@app.route("/announcements", methods=["GET"])
+def get_announcements():
+    # Return latest first
+    sorted_ann = sorted(announcements_store, key=lambda x: x["createdAt"], reverse=True)
+    return jsonify(sorted_ann), 200
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
