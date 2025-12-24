@@ -16,30 +16,29 @@ const Quiz = () => {
   const [certUnlocked, setCertUnlocked] = useState(false);
   const [quizLocked, setQuizLocked] = useState(false);
 
+  // Fetch course and user progress
   useEffect(() => {
     if (!user) return;
 
     const fetchCourseAndProgress = async () => {
       try {
         // Fetch course details
-        const res = await fetch(`${API_BASE}/courses`);
-        if (!res.ok) throw new Error("Failed to fetch courses");
-        const courses = await res.json();
-        const selectedCourse = courses.find((c) => c.id === id);
-        if (!selectedCourse) throw new Error("Course not found");
+        const res = await fetch(`${API_BASE}/courses/${id}`);
+        if (!res.ok) throw new Error("Course not found");
+        const selectedCourse = await res.json();
         setCourse(selectedCourse);
 
-        // Fetch user progress
+        // Fetch user progress for this course
         const progressRes = await fetch(`${API_BASE}/progress/${user.id}/${id}`);
+        if (!progressRes.ok) throw new Error("Failed to fetch progress");
         const progressData = await progressRes.json();
 
         const quizResults = progressData.quiz_results || {};
-        const passed = Object.keys(quizResults).length
-          ? Object.values(quizResults)[0] / selectedCourse.quiz.length >= 0.6
-          : false;
+        const previousScore = quizResults["final"] || 0;
+        const passed = previousScore / (selectedCourse.quiz.length || 1) >= 0.6;
 
         if (passed) {
-          setScore(Object.values(quizResults)[0] || 0);
+          setScore(previousScore);
           setFinished(true);
           setCertUnlocked(true);
           setQuizLocked(true);
@@ -53,13 +52,8 @@ const Quiz = () => {
     window.history.replaceState({}, ""); // prevent back navigation
   }, [id, user]);
 
-  if (!user) {
-    return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
-  }
-
-  if (!course || !course.quiz || course.quiz.length === 0) {
-    return <h2 style={{ padding: "40px" }}>No quiz found for this course</h2>;
-  }
+  if (!user) return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
+  if (!course || !course.quiz || course.quiz.length === 0) return <h2 style={{ padding: "40px" }}>No quiz found for this course</h2>;
 
   const quiz = course.quiz;
 
