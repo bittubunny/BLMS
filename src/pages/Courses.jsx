@@ -2,28 +2,34 @@ import { useEffect, useState } from "react";
 import "./Courses.css";
 import { useNavigate } from "react-router-dom";
 
-const STORAGE_KEY = "courses";
+const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch courses from backend
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/courses`);
+      if (!res.ok) throw new Error("Failed to fetch courses");
+
+      const data = await res.json();
+      setCourses(data);
+    } catch (err) {
+      console.error(err);
+      setCourses([]);
+    }
+  };
+
   useEffect(() => {
-    const loadCourses = () => {
-      const storedCourses =
-        JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    fetchCourses();
 
-      setCourses(storedCourses);
-    };
-
-    loadCourses();
-
-    window.addEventListener("storage", loadCourses);
-    window.addEventListener("focus", loadCourses);
+    // Optional: refetch when tab gains focus
+    window.addEventListener("focus", fetchCourses);
 
     return () => {
-      window.removeEventListener("storage", loadCourses);
-      window.removeEventListener("focus", loadCourses);
+      window.removeEventListener("focus", fetchCourses);
     };
   }, []);
 
@@ -45,9 +51,7 @@ const Courses = () => {
             <p>{course.description}</p>
             <span>Duration: {course.duration}</span>
 
-            <button
-              onClick={() => navigate(`/course/${course.id}`)}
-            >
+            <button onClick={() => navigate(`/course/${course.id}`)}>
               Start Course
             </button>
           </div>
