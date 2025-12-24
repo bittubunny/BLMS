@@ -150,6 +150,22 @@ def get_courses():
         })
     return jsonify(result), 200
 
+# Get single course
+@app.route("/courses/<string:course_id>", methods=["GET"])
+def get_course(course_id):
+    course = Course.query.get(course_id)
+    if not course:
+        return jsonify({"message": "Course not found"}), 404
+    return jsonify({
+        "id": course.id,
+        "title": course.title,
+        "description": course.description,
+        "duration": course.duration,
+        "image": course.image,
+        "topics": json.loads(course.topics),
+        "quiz": json.loads(course.quiz)
+    }), 200
+
 # Delete a course
 @app.route("/courses/<string:course_id>", methods=["DELETE"])
 def delete_course(course_id):
@@ -168,7 +184,7 @@ def delete_course(course_id):
 def update_topic(user_id, course_id):
     data = request.get_json()
     topic_id = data.get("topic_id")
-    if not topic_id:
+    if topic_id is None:
         return jsonify({"message": "topic_id is required"}), 400
 
     progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
@@ -176,7 +192,7 @@ def update_topic(user_id, course_id):
         progress = UserProgress(user_id=user_id, course_id=course_id, completed_topics=json.dumps([topic_id]))
         db.session.add(progress)
     else:
-        completed = json.loads(progress.completed_topics)
+        completed = json.loads(progress.completed_topics or "[]")
         if topic_id not in completed:
             completed.append(topic_id)
             progress.completed_topics = json.dumps(completed)
@@ -190,7 +206,7 @@ def update_quiz(user_id, course_id):
     data = request.get_json()
     quiz_id = data.get("quiz_id")
     score = data.get("score")
-    if not quiz_id or score is None:
+    if quiz_id is None or score is None:
         return jsonify({"message": "quiz_id and score are required"}), 400
 
     progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
@@ -198,7 +214,7 @@ def update_quiz(user_id, course_id):
         progress = UserProgress(user_id=user_id, course_id=course_id, quiz_results=json.dumps({quiz_id: score}))
         db.session.add(progress)
     else:
-        quiz_results = json.loads(progress.quiz_results)
+        quiz_results = json.loads(progress.quiz_results or "{}")
         quiz_results[quiz_id] = score
         progress.quiz_results = json.dumps(quiz_results)
     progress.last_updated = int(time.time())
@@ -212,8 +228,8 @@ def get_progress(user_id, course_id):
     if not progress:
         return jsonify({"completed_topics": [], "quiz_results": {}, "certificate_earned": False}), 200
     return jsonify({
-        "completed_topics": json.loads(progress.completed_topics),
-        "quiz_results": json.loads(progress.quiz_results),
+        "completed_topics": json.loads(progress.completed_topics or "[]"),
+        "quiz_results": json.loads(progress.quiz_results or "{}"),
         "certificate_earned": progress.certificate_earned
     }), 200
 
