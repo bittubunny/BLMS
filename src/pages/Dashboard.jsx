@@ -7,103 +7,103 @@ const API_BASE = "https://blms-fnj5.onrender.com";
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  const [courses, setCourses] = useState([]);
-  const [progress, setProgress] = useState({});
-  const [certificates, setCertificates] = useState({});
 
-  if (!user) return <h2>Please login to view dashboard</h2>;
+  const [courses, setCourses] = useState([]);
+  const [userProgress, setUserProgress] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  if (!user) {
+    return <h2 style={{ padding: "40px" }}>Please login to view dashboard</h2>;
+  }
 
   useEffect(() => {
-    const fetchCoursesAndProgress = async () => {
+    const fetchDashboardData = async () => {
       try {
-        // Fetch all courses from backend
-        const res = await fetch(`${API_BASE}/courses`);
-        if (!res.ok) throw new Error("Failed to fetch courses");
-        const coursesData = await res.json();
-        setCourses(coursesData);
+        // 1. Fetch all courses (GLOBAL)
+        const courseRes = await fetch(`${API_BASE}/courses`);
+        const courseData = await courseRes.json();
+        setCourses(courseData);
 
-        // Fetch user progress for all courses
-        const progressData = {};
-        const certData = {};
+        // 2. Fetch USER-SPECIFIC progress
+        const progressMap = {};
 
-        for (const course of coursesData) {
-          try {
-            const progRes = await fetch(`${API_BASE}/progress/${user.id}/${course.id}`);
-            const prog = await progRes.json();
+        for (const course of courseData) {
+          const progRes = await fetch(
+            `${API_BASE}/progress/${user.id}/${course.id}`
+          );
+          const prog = await progRes.json();
 
-            const quizScore = Object.values(prog.quiz_results || {})[0] || 0;
+          // Only store if user has attempted something
+          const quizScore = prog.quiz_results?.final ?? null;
+
+          if (quizScore !== null) {
             const totalQuestions = course.quiz?.length || 0;
-            const quizPassed = totalQuestions ? quizScore / totalQuestions >= 0.6 : false;
+            const passed =
+              totalQuestions > 0
+                ? quizScore / totalQuestions >= 0.6
+                : false;
 
-            progressData[course.id] = {
-              completedTopics: prog.completed_topics || [],
-              quizScore,
-              totalQuestions,
-              quizPassed,
+            progressMap[course.id] = {
+              courseTitle: course.title,
+              score: quizScore,
+              total: totalQuestions,
+              passed,
             };
-
-            if (quizPassed) {
-              certData[course.id] = {
-                courseTitle: course.title,
-                verificationId: `BLMS-${course.title
-                  .replace(/\s+/g, "")
-                  .substring(0, 5)
-                  .toUpperCase()}-${Math.random()
-                  .toString(36)
-                  .substring(2, 10)
-                  .toUpperCase()}`,
-                issuedAt: new Date().toISOString(),
-              };
-            }
-          } catch (err) {
-            console.error(`Failed to fetch progress for course ${course.id}:`, err);
           }
         }
 
-        setProgress(progressData);
-        setCertificates(certData);
+        setUserProgress(progressMap);
       } catch (err) {
-        console.error("Failed to fetch courses or progress:", err);
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCoursesAndProgress();
-  }, [user]);
+    fetchDashboardData();
+  }, [user.id]);
 
-  const getCourseTitle = (id) => {
-    const course = courses.find((c) => c.id === id);
-    return course ? course.title : `Course ${id}`;
-  };
+  if (loading) {
+    return <h2 style={{ padding: "40px" }}>Loading dashboard...</h2>;
+  }
+
+  const completedCourseIds = Object.keys(userProgress);
 
   return (
     <div className="dashboard">
       <h1>Welcome, {user.name}</h1>
 
       <h2>Completed Courses</h2>
-      {courses.length === 0 ? (
-        <p>Loading courses...</p>
-      ) : Object.keys(progress).length === 0 ? (
+
+      {completedCourseIds.length === 0 ? (
         <p>No courses completed yet</p>
       ) : (
-        Object.entries(progress).map(([cid, data]) => (
-          <div key={cid} className="dash-card">
-            <div>
-              <p>
-                Course: <strong>{getCourseTitle(cid)}</strong>
-              </p>
-              <p>
-                Score: {data.quizScore} / {data.totalQuestions}
-              </p>
+        completedCourseIds.map((courseId) => {
+          const data = userProgress[courseId];
+
+          return (
+            <div key={courseId} className="dash-card">
+              <div>
+                <p>
+                  Course: <strong>{data.courseTitle}</strong>
+                </p>
+                <p>
+                  Score: {data.score} / {data.total}
+                </p>
+              </div>
+
+              <div>
+                {data.passed ? (
+                  <Link to={`/certificate/${courseId}`}>
+                    View Certificate
+                  </Link>
+                ) : (
+                  <span>Certificate Locked</span>
+                )}
+              </div>
             </div>
-            <div>
-              {certificates[cid] ? (
-                <Link to={`/certificate/${cid}`}>View Certificate</Link>
-              ) : (
-                <span>Certificate Locked</span>
-              )}
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );
