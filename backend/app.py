@@ -6,15 +6,12 @@ import os
 
 app = Flask(__name__)
 
-# ---------------- CORS ----------------
-CORS(app, resources={
-    r"/*": {
-        "origins": [
-            "http://localhost:5173",
-            "https://blms-6exlguhvw-bharath-chelimallas-projects.vercel.app"  # 🔁 CHANGE THIS
-        ]
-    }
-})
+# ---------------- CORS (FIXED) ----------------
+CORS(
+    app,
+    resources={r"/*": {"origins": "*"}},
+    supports_credentials=True
+)
 
 # ---------------- DATABASE ----------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -30,6 +27,9 @@ with app.app_context():
 @app.route("/signup", methods=["POST"])
 def signup():
     data = request.get_json()
+
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
 
     name = data.get("name")
     email = data.get("email")
@@ -67,6 +67,9 @@ def signup():
 def login():
     data = request.get_json()
 
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+
     email = data.get("email")
     password = data.get("password")
 
@@ -89,7 +92,7 @@ def login():
 
 
 # ---------------- HEALTH CHECK ----------------
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
     return jsonify({"status": "BLMS backend running"}), 200
 
@@ -97,5 +100,3 @@ def home():
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
-
-
