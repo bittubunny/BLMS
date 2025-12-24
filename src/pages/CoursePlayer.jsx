@@ -21,12 +21,10 @@ const CoursePlayer = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch course details
-        const courseRes = await fetch(`${API_BASE}/courses`);
-        if (!courseRes.ok) throw new Error("Failed to fetch courses");
-        const courses = await courseRes.json();
-        const selectedCourse = courses.find((c) => c.id === id);
-        if (!selectedCourse) throw new Error("Course not found");
+        // Fetch the specific course from backend
+        const courseRes = await fetch(`${API_BASE}/courses/${id}`);
+        if (!courseRes.ok) throw new Error("Course not found");
+        const selectedCourse = await courseRes.json();
         setCourse(selectedCourse);
 
         // Fetch user progress for this course
@@ -35,8 +33,8 @@ const CoursePlayer = () => {
         );
         if (!progressRes.ok) throw new Error("Failed to fetch progress");
         const progressData = await progressRes.json();
+
         setCompleted(progressData.completed_topics || []);
-        // quizDone can be derived if needed, example:
         setQuizDone(
           Object.keys(progressData.quiz_results || {}).length > 0
         );
@@ -58,7 +56,7 @@ const CoursePlayer = () => {
 
     setCompleted(updated);
 
-    // Send update to backend
+    // Update backend
     try {
       await fetch(`${API_BASE}/progress/${user.id}/${course.id}/topic`, {
         method: "POST",
