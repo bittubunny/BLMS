@@ -453,3 +453,134 @@
     flex: 1 1 100%;
   }
 }
+/* ===== MOBILE RESPONSIVE (<= 600px) ===== */
+@media (max-width: 600px) {
+
+  /* GENERAL */
+  body {
+    font-size: 14px;
+  }
+
+  .section {
+    padding: 50px 20px;
+  }
+
+  /* ===== NAVBAR ===== */
+  .navbar {
+    padding: 0 15px;
+    height: auto;
+    flex-wrap: wrap;
+  }
+
+  .nav-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-left a {
+    font-size: 14px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .nav-right {
+    margin-top: 10px;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 30px 20px;
+    height: auto;
+  }
+
+  .hero-left h1 {
+    font-size: 30px;
+  }
+
+  .hero-left p {
+    font-size: 16px;
+  }
+
+  .hero-right {
+    height: 200px;
+  }
+
+  /* ===== SECTIONS ===== */
+  .section h2 {
+    font-size: 26px;
+  }
+
+  .section p {
+    font-size: 15px;
+  }
+
+  /* ===== CARDS ===== */
+  .cards {
+    flex-direction: column;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .card h3 {
+    font-size: 18px;
+  }
+
+  .card p {
+    font-size: 14px;
+  }
+
+  /* ===== COMPANY STATS ===== */
+  .company-stats {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat {
+    padding: 18px;
+  }
+
+  .stat span {
+    font-size: 18px;
+  }
+
+  /* ===== COURSE STATS ===== */
+  .course-stats {
+    flex-direction: column;
+  }
+
+  .course-stat {
+    justify-content: center;
+  }
+
+  /* ===== CONTACT ===== */
+  .contact-grid {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .contact-item {
+    padding: 14px 16px;
+  }
+
+  .contact-info {
+    font-size: 14px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .view-more {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  /* ===== PROFILE DROPDOWN ===== */
+  .profile-dropdown {
+    width: 180px;
+    top: 45px;
+  }
+}
+
