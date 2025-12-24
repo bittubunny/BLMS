@@ -5,7 +5,7 @@ import "./Quiz.css";
 const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Quiz = () => {
-  const { id: courseId } = useParams();
+  const { id } = useParams(); // course ID
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("currentUser"));
 
@@ -13,64 +13,54 @@ const Quiz = () => {
   const [qIndex, setQIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [quizLocked, setQuizLocked] = useState(false);
   const [certUnlocked, setCertUnlocked] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [quizLocked, setQuizLocked] = useState(false);
 
-  /* ================= FETCH COURSE + USER PROGRESS ================= */
+  // Fetch course and user progress
   useEffect(() => {
     if (!user) return;
 
-    const fetchData = async () => {
+    const fetchCourseAndProgress = async () => {
       try {
         // Fetch course
-        const courseRes = await fetch(`${API_BASE}/courses/${courseId}`);
-        if (!courseRes.ok) throw new Error("Course not found");
-        const courseData = await courseRes.json();
-        setCourse(courseData);
+        const res = await fetch(`${API_BASE}/courses/${id}`);
+        if (!res.ok) throw new Error("Course not found");
+        const selectedCourse = await res.json();
+        setCourse(selectedCourse);
 
-        // Fetch progress (USER-SPECIFIC)
-        const progressRes = await fetch(
-          `${API_BASE}/progress/${user.id}/${courseId}`
-        );
-        const progressData = await progressRes.json();
+        // Fetch user progress for this course
+        const progressRes = await fetch(`${API_BASE}/progress/${user.id}/${id}`);
+        const progressData = progressRes.ok ? await progressRes.json() : { quiz_results: {} };
 
         const quizResults = progressData.quiz_results || {};
-        const previousScore = quizResults.final ?? null;
+        const previousScore = quizResults["final"] || 0;
+        const passed = previousScore / (selectedCourse.quiz.length || 1) >= 0.6;
 
-        if (previousScore !== null) {
-          const passed =
-            previousScore / (courseData.quiz.length || 1) >= 0.6;
-
-          setScore(previousScore);
-          setFinished(true);
-          setQuizLocked(true);
-          setCertUnlocked(passed);
-        }
+        setScore(passed ? previousScore : 0);
+        setFinished(passed);
+        setCertUnlocked(passed);
+        setQuizLocked(passed);
+        setQIndex(0); // start from first question
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
+        setCourse(null);
+        setScore(0);
+        setFinished(false);
+        setCertUnlocked(false);
+        setQuizLocked(false);
+        setQIndex(0);
       }
     };
 
-    fetchData();
-    window.history.replaceState({}, "");
-  }, [courseId, user]);
+    fetchCourseAndProgress();
+  }, [id, user?.id]);
 
-  /* ================= GUARDS ================= */
-  if (!user)
-    return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
-
-  if (loading)
-    return <h2 style={{ padding: "40px" }}>Loading quiz...</h2>;
-
-  if (!course || !course.quiz || course.quiz.length === 0)
-    return <h2 style={{ padding: "40px" }}>No quiz available</h2>;
+  if (!user) return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
+  if (!course) return <h2 style={{ padding: "40px" }}>Loading course...</h2>;
+  if (!course.quiz || course.quiz.length === 0) return <h2 style={{ padding: "40px" }}>No quiz found for this course</h2>;
 
   const quiz = course.quiz;
 
-  /* ================= ANSWER HANDLER ================= */
   const answer = async (option) => {
     if (quizLocked) return;
 
@@ -81,46 +71,35 @@ const Quiz = () => {
       setScore(newScore);
       setQIndex(qIndex + 1);
     } else {
-      // FINAL SUBMIT
       const finalScore = newScore;
-      const passed = finalScore / quiz.length >= 0.6;
-
       setScore(finalScore);
       setFinished(true);
       setQuizLocked(true);
-      setCertUnlocked(passed);
+      if (finalScore / quiz.length >= 0.6) setCertUnlocked(true);
 
+      // Save quiz result for this user
       try {
-        await fetch(
-          `${API_BASE}/progress/${user.id}/${courseId}/quiz`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              quiz_id: "final",
-              score: finalScore,
-            }),
-          }
-        );
+        await fetch(`${API_BASE}/progress/${user.id}/${course.id}/quiz`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quiz_id: "final", score: finalScore, total_questions: quiz.length }),
+        });
       } catch (err) {
-        console.error("Quiz save failed:", err);
+        console.error("Failed to save quiz result:", err);
       }
 
       navigate("/dashboard", { replace: true });
     }
   };
 
-  /* ================= RETAKE ================= */
   const retakeQuiz = () => {
-    setQIndex(0);
     setScore(0);
+    setQIndex(0);
     setFinished(false);
-    setQuizLocked(false);
     setCertUnlocked(false);
-    window.history.replaceState({}, "");
+    setQuizLocked(false);
   };
 
-  /* ================= UI ================= */
   return (
     <div className="quiz-page">
       {!finished ? (
@@ -129,7 +108,6 @@ const Quiz = () => {
             Question {qIndex + 1} of {quiz.length}
           </h3>
           <h4>{quiz[qIndex].question}</h4>
-
           <div className="quiz-options">
             {quiz[qIndex].options.map((option, idx) => (
               <button key={idx} onClick={() => answer(option)}>
@@ -147,9 +125,9 @@ const Quiz = () => {
           </p>
 
           {certUnlocked ? (
-            <p className="certificate-unlocked">🎖 Certificate Unlocked</p>
+            <p className="certificate-unlocked">🎖 Certificate Unlocked!</p>
           ) : (
-            <p className="certificate-locked">❌ Certificate Locked</p>
+            <p className="certificate-locked">❌ Try Next Time</p>
           )}
 
           <button
