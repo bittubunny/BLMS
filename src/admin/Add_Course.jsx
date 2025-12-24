@@ -22,7 +22,7 @@ const AddCourse = () => {
   const [topic, setTopic] = useState({ title: "", content: "" });
   const [quiz, setQuiz] = useState({ question: "", options: "", answer: "" });
 
-  /* ---------- FETCH COURSES FROM BACKEND ---------- */
+  /* ---------- FETCH COURSES ---------- */
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
@@ -92,14 +92,21 @@ const AddCourse = () => {
       });
 
       if (!res.ok) throw new Error("Failed to add course");
-      const data = await res.json();
 
+      const data = await res.json();
       alert(`Course "${data.course.title}" added successfully!`);
 
-      // Reset course form
-      setCourse({ title: "", description: "", duration: "", image: "", topics: [], quiz: [] });
+      // Clear the form
+      setCourse({
+        title: "",
+        description: "",
+        duration: "",
+        image: "",
+        topics: [],
+        quiz: [],
+      });
 
-      // Refetch all courses from backend
+      // Refetch courses globally so all users see the new course
       fetchCourses();
     } catch (err) {
       console.error(err);
@@ -114,6 +121,7 @@ const AddCourse = () => {
     try {
       const res = await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete course");
+
       fetchCourses();
     } catch (err) {
       console.error(err);
@@ -121,13 +129,22 @@ const AddCourse = () => {
     }
   };
 
-  /* ---------- RENDER UI ---------- */
+  /* ---------- RENDER ---------- */
   if (!auth) {
     return (
       <div className="admin-login">
         <h2>Admin Login</h2>
-        <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <input
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <button onClick={loginAdmin}>Login</button>
       </div>
     );
@@ -136,21 +153,58 @@ const AddCourse = () => {
   return (
     <div className="add-course">
       <h2>Add Course</h2>
-      <input placeholder="Course Title" value={course.title} onChange={(e) => setCourse({ ...course, title: e.target.value })} />
-      <input placeholder="Duration" value={course.duration} onChange={(e) => setCourse({ ...course, duration: e.target.value })} />
-      <input placeholder="Image URL" value={course.image} onChange={(e) => setCourse({ ...course, image: e.target.value })} />
-      <textarea placeholder="Course Description" maxLength={MAX_DESC_LENGTH} value={course.description} onChange={(e) => setCourse({ ...course, description: e.target.value })} />
+      <input
+        placeholder="Course Title"
+        value={course.title}
+        onChange={(e) => setCourse({ ...course, title: e.target.value })}
+      />
+      <input
+        placeholder="Duration"
+        value={course.duration}
+        onChange={(e) => setCourse({ ...course, duration: e.target.value })}
+      />
+      <input
+        placeholder="Image URL"
+        value={course.image}
+        onChange={(e) => setCourse({ ...course, image: e.target.value })}
+      />
+      <textarea
+        placeholder="Course Description"
+        maxLength={MAX_DESC_LENGTH}
+        value={course.description}
+        onChange={(e) => setCourse({ ...course, description: e.target.value })}
+      />
       <p className="char-count">{course.description.length}/{MAX_DESC_LENGTH}</p>
 
       <h3>Add Topics</h3>
-      <input placeholder="Topic Title" value={topic.title} onChange={(e) => setTopic({ ...topic, title: e.target.value })} />
-      <textarea placeholder="Topic Content" value={topic.content} onChange={(e) => setTopic({ ...topic, content: e.target.value })} />
+      <input
+        placeholder="Topic Title"
+        value={topic.title}
+        onChange={(e) => setTopic({ ...topic, title: e.target.value })}
+      />
+      <textarea
+        placeholder="Topic Content"
+        value={topic.content}
+        onChange={(e) => setTopic({ ...topic, content: e.target.value })}
+      />
       <button onClick={addTopic}>Add Topic</button>
 
       <h3>Add Quiz Questions</h3>
-      <input placeholder="Question" value={quiz.question} onChange={(e) => setQuiz({ ...quiz, question: e.target.value })} />
-      <input placeholder="Options (comma separated)" value={quiz.options} onChange={(e) => setQuiz({ ...quiz, options: e.target.value })} />
-      <input placeholder="Correct Answer" value={quiz.answer} onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })} />
+      <input
+        placeholder="Question"
+        value={quiz.question}
+        onChange={(e) => setQuiz({ ...quiz, question: e.target.value })}
+      />
+      <input
+        placeholder="Options (comma separated)"
+        value={quiz.options}
+        onChange={(e) => setQuiz({ ...quiz, options: e.target.value })}
+      />
+      <input
+        placeholder="Correct Answer"
+        value={quiz.answer}
+        onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })}
+      />
       <button onClick={addQuiz}>Add Quiz Question</button>
 
       <button className="add-course-btn" onClick={addCourse}>Add Course</button>
