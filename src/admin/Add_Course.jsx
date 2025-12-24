@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./Add_Course.css";
 
 const MAX_DESC_LENGTH = 200;
-const API_BASE = "https://blms-fnj5.onrender.com"; // deployed backend
+const API_BASE = "https://blms-fnj5.onrender.com"; // backend URL
 
 const AddCourse = () => {
   const [auth, setAuth] = useState(false);
@@ -22,7 +22,7 @@ const AddCourse = () => {
   const [topic, setTopic] = useState({ title: "", content: "" });
   const [quiz, setQuiz] = useState({ question: "", options: "", answer: "" });
 
-  /* ---------- FETCH COURSES ---------- */
+  /* ---------- FETCH COURSES FROM BACKEND ---------- */
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
@@ -37,10 +37,7 @@ const AddCourse = () => {
 
   useEffect(() => {
     fetchCourses();
-
-    if (localStorage.getItem("isAdmin") === "true") {
-      setAuth(true);
-    }
+    if (localStorage.getItem("isAdmin") === "true") setAuth(true);
   }, []);
 
   /* ---------- ADMIN LOGIN ---------- */
@@ -72,7 +69,7 @@ const AddCourse = () => {
     setQuiz({ question: "", options: "", answer: "" });
   };
 
-  /* ---------- ADD COURSE ---------- */
+  /* ---------- ADD COURSE TO BACKEND ---------- */
   const addCourse = async () => {
     if (!course.title || !course.description || !course.duration) {
       alert("Please fill all required fields");
@@ -95,10 +92,14 @@ const AddCourse = () => {
       });
 
       if (!res.ok) throw new Error("Failed to add course");
-
       const data = await res.json();
+
       alert(`Course "${data.course.title}" added successfully!`);
+
+      // Reset course form
       setCourse({ title: "", description: "", duration: "", image: "", topics: [], quiz: [] });
+
+      // Refetch all courses from backend
       fetchCourses();
     } catch (err) {
       console.error(err);
