@@ -16,7 +16,7 @@ const CoursePlayer = () => {
   // Fetch course details and user progress
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!storedUser) return;
+    if (!storedUser) return setUser(null);
     setUser(storedUser);
 
     const fetchData = async () => {
@@ -40,6 +40,7 @@ const CoursePlayer = () => {
         );
       } catch (err) {
         console.error(err);
+        setCourse(null);
       }
     };
 
@@ -56,7 +57,6 @@ const CoursePlayer = () => {
 
     setCompleted(updated);
 
-    // Update backend
     try {
       await fetch(`${API_BASE}/progress/${user.id}/${course.id}/topic`, {
         method: "POST",
@@ -72,8 +72,8 @@ const CoursePlayer = () => {
     navigate(`/quiz/${course.id}`);
   };
 
-  if (!course || !user)
-    return <h2 style={{ padding: "40px" }}>Loading course...</h2>;
+  if (!user) return <h2 style={{ padding: "40px" }}>Please login to access this course</h2>;
+  if (!course) return <h2 style={{ padding: "40px" }}>Loading course...</h2>;
 
   const progress = course.topics.length
     ? (completed.length / course.topics.length) * 100
