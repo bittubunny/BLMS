@@ -17,7 +17,7 @@ const Courses = () => {
       const data = await res.json();
       setCourses(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching courses:", err);
       setCourses([]);
     }
   };
@@ -25,12 +25,11 @@ const Courses = () => {
   useEffect(() => {
     fetchCourses();
 
-    // Optional: refetch when tab gains focus
-    window.addEventListener("focus", fetchCourses);
+    // Refetch courses when tab gains focus
+    const handleFocus = () => fetchCourses();
+    window.addEventListener("focus", handleFocus);
 
-    return () => {
-      window.removeEventListener("focus", fetchCourses);
-    };
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   return (
