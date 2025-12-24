@@ -26,10 +26,12 @@ const AddCourse = () => {
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
+      if (!res.ok) throw new Error("Failed to fetch courses");
       const data = await res.json();
       setCourses(data);
     } catch (err) {
       console.error("Failed to fetch courses:", err);
+      setCourses([]);
     }
   };
 
@@ -54,7 +56,7 @@ const AddCourse = () => {
   /* ---------- ADD TOPIC ---------- */
   const addTopic = () => {
     if (!topic.title || !topic.content) return;
-    setCourse({ ...course, topics: [...course.topics, topic] });
+    setCourse({ ...course, topics: [...course.topics, { ...topic }] });
     setTopic({ title: "", content: "" });
   };
 
@@ -111,7 +113,6 @@ const AddCourse = () => {
     try {
       const res = await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete course");
-
       fetchCourses();
     } catch (err) {
       console.error(err);
@@ -124,8 +125,8 @@ const AddCourse = () => {
     return (
       <div className="admin-login">
         <h2>Admin Login</h2>
-        <input placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
-        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+        <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button onClick={loginAdmin}>Login</button>
       </div>
     );
