@@ -1,109 +1,98 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./Dashboard.css";
 
 const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("currentUser"));
-
   const [courses, setCourses] = useState([]);
-  const [userProgress, setUserProgress] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState({});
+  const [certificates, setCertificates] = useState({});
 
-  if (!user) {
-    return <h2 style={{ padding: "40px" }}>Please login to view dashboard</h2>;
-  }
+  if (!user) return <h2>Please login to view dashboard</h2>;
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchCoursesAndProgress = async () => {
       try {
-        // 1. Fetch all courses (GLOBAL)
-        const courseRes = await fetch(`${API_BASE}/courses`);
-        const courseData = await courseRes.json();
-        setCourses(courseData);
+        const res = await fetch(`${API_BASE}/courses`);
+        if (!res.ok) throw new Error("Failed to fetch courses");
+        const coursesData = await res.json();
+        setCourses(coursesData);
 
-        // 2. Fetch USER-SPECIFIC progress
-        const progressMap = {};
+        const progressData = {};
+        const certData = {};
 
-        for (const course of courseData) {
-          const progRes = await fetch(
-            `${API_BASE}/progress/${user.id}/${course.id}`
-          );
-          const prog = await progRes.json();
+        for (const course of coursesData) {
+          const progRes = await fetch(`${API_BASE}/progress/${user.id}/${course.id}`);
+          const prog = progRes.ok ? await progRes.json() : { completed_topics: [], quiz_results: {}, certificate_earned: false };
 
-          // Only store if user has attempted something
-          const quizScore = prog.quiz_results?.final ?? null;
+          const quizScore = Object.values(prog.quiz_results || {})[0] || 0;
+          const totalQuestions = course.quiz?.length || 0;
+          const quizPassed = totalQuestions ? quizScore / totalQuestions >= 0.6 : false;
 
-          if (quizScore !== null) {
-            const totalQuestions = course.quiz?.length || 0;
-            const passed =
-              totalQuestions > 0
-                ? quizScore / totalQuestions >= 0.6
-                : false;
+          progressData[course.id] = {
+            completedTopics: prog.completed_topics || [],
+            quizScore,
+            totalQuestions,
+            quizPassed,
+          };
 
-            progressMap[course.id] = {
+          if (quizPassed) {
+            certData[course.id] = {
               courseTitle: course.title,
-              score: quizScore,
-              total: totalQuestions,
-              passed,
+              verificationId: `BLMS-${course.title.replace(/\s+/g, "").substring(0, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+              issuedAt: new Date().toISOString(),
             };
           }
         }
 
-        setUserProgress(progressMap);
+        setProgress(progressData);
+        setCertificates(certData);
       } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setLoading(false);
+        console.error(err);
+        setProgress({});
+        setCertificates({});
       }
     };
 
-    fetchDashboardData();
-  }, [user.id]);
+    fetchCoursesAndProgress();
+  }, [user?.id]);
 
-  if (loading) {
-    return <h2 style={{ padding: "40px" }}>Loading dashboard...</h2>;
-  }
-
-  const completedCourseIds = Object.keys(userProgress);
+  const getCourseTitle = (id) => {
+    const course = courses.find((c) => c.id === id);
+    return course ? course.title : `Course ${id}`;
+  };
 
   return (
     <div className="dashboard">
       <h1>Welcome, {user.name}</h1>
 
       <h2>Completed Courses</h2>
-
-      {completedCourseIds.length === 0 ? (
+      {courses.length === 0 ? (
+        <p>Loading courses...</p>
+      ) : Object.keys(progress).length === 0 ? (
         <p>No courses completed yet</p>
       ) : (
-        completedCourseIds.map((courseId) => {
-          const data = userProgress[courseId];
-
-          return (
-            <div key={courseId} className="dash-card">
-              <div>
-                <p>
-                  Course: <strong>{data.courseTitle}</strong>
-                </p>
-                <p>
-                  Score: {data.score} / {data.total}
-                </p>
-              </div>
-
-              <div>
-                {data.passed ? (
-                  <Link to={`/certificate/${courseId}`}>
-                    View Certificate
-                  </Link>
-                ) : (
-                  <span>Certificate Locked</span>
-                )}
-              </div>
+        Object.entries(progress).map(([cid, data]) => (
+          <div key={cid} className="dash-card">
+            <div>
+              <p>
+                Course: <strong>{getCourseTitle(cid)}</strong>
+              </p>
+              <p>
+                Score: {data.quizScore} / {data.totalQuestions}
+              </p>
             </div>
-          );
-        })
+            <div>
+              {certificates[cid] ? (
+                <Link to={`/certificate/${cid}`}>View Certificate</Link>
+              ) : (
+                <span>Certificate Locked</span>
+              )}
+            </div>
+          </div>
+        ))
       )}
     </div>
   );
