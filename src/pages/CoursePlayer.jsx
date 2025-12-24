@@ -2,6 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./CoursePlayer.css";
 
+const API_BASE = "https://blms-fnj5.onrender.com";
+
 const CoursePlayer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,49 +13,70 @@ const CoursePlayer = () => {
   const [user, setUser] = useState(null);
   const [quizDone, setQuizDone] = useState(false);
 
+  // Fetch course and user progress from backend
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!storedUser) return;
     setUser(storedUser);
 
-    const courses = JSON.parse(localStorage.getItem("courses")) || [];
-    const selectedCourse = courses.find(c => c.id === parseInt(id));
-    if (!selectedCourse) return;
-    setCourse(selectedCourse);
+    // Fetch course details
+    const fetchCourse = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/courses/${id}`);
+        if (!res.ok) throw new Error("Course not found");
 
-    const progressKey = `progress-${storedUser.username}-${selectedCourse.id}`;
-    const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || [];
-    setCompleted(savedProgress);
+        const data = await res.json();
+        setCourse(data);
 
-    // Check if quiz already done
-    const userProgress = JSON.parse(localStorage.getItem(`progress-${storedUser.username}`)) || { courses: {} };
-    if (userProgress.courses?.[selectedCourse.id]?.quizPassed) {
-      setQuizDone(true);
-    }
+        // Fetch user progress for this course
+        const progressRes = await fetch(
+          `${API_BASE}/progress/${storedUser.id}/${id}`
+        );
+        if (!progressRes.ok) throw new Error("Failed to fetch progress");
+
+        const progressData = await progressRes.json();
+        setCompleted(progressData.completedTopics || []);
+        setQuizDone(progressData.quizPassed || false);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCourse();
   }, [id]);
 
-  const toggleComplete = (index) => {
+  const toggleComplete = async (index) => {
     if (!user || !course) return;
 
     const updated = completed.includes(index)
-      ? completed.filter(i => i !== index)
+      ? completed.filter((i) => i !== index)
       : [...completed, index];
 
     setCompleted(updated);
 
-    const progressKey = `progress-${user.username}-${course.id}`;
-    localStorage.setItem(progressKey, JSON.stringify(updated));
+    // Save progress to backend
+    try {
+      await fetch(`${API_BASE}/progress/${user.id}/${course.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completedTopics: updated }),
+      });
+    } catch (err) {
+      console.error("Failed to update progress:", err);
+    }
   };
 
   const handleQuizClick = () => {
-    // Reset quizDone temporarily to allow fresh attempt
     setQuizDone(false);
     navigate(`/quiz/${course.id}`);
   };
 
-  if (!course || !user) return <h2 style={{ padding: "40px" }}>Loading course...</h2>;
+  if (!course || !user)
+    return <h2 style={{ padding: "40px" }}>Loading course...</h2>;
 
-  const progress = (completed.length / course.topics.length) * 100;
+  const progress = course.topics.length
+    ? (completed.length / course.topics.length) * 100
+    : 0;
 
   return (
     <div className="course-player">
