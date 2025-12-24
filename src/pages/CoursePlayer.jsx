@@ -13,38 +13,42 @@ const CoursePlayer = () => {
   const [user, setUser] = useState(null);
   const [quizDone, setQuizDone] = useState(false);
 
-  // Fetch course and user progress from backend
+  // Fetch course details and user progress
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!storedUser) return;
     setUser(storedUser);
 
-    // Fetch course details
-    const fetchCourse = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`${API_BASE}/courses/${id}`);
-        if (!res.ok) throw new Error("Course not found");
-
-        const data = await res.json();
-        setCourse(data);
+        // Fetch course details
+        const courseRes = await fetch(`${API_BASE}/courses`);
+        if (!courseRes.ok) throw new Error("Failed to fetch courses");
+        const courses = await courseRes.json();
+        const selectedCourse = courses.find((c) => c.id === id);
+        if (!selectedCourse) throw new Error("Course not found");
+        setCourse(selectedCourse);
 
         // Fetch user progress for this course
         const progressRes = await fetch(
           `${API_BASE}/progress/${storedUser.id}/${id}`
         );
         if (!progressRes.ok) throw new Error("Failed to fetch progress");
-
         const progressData = await progressRes.json();
-        setCompleted(progressData.completedTopics || []);
-        setQuizDone(progressData.quizPassed || false);
+        setCompleted(progressData.completed_topics || []);
+        // quizDone can be derived if needed, example:
+        setQuizDone(
+          Object.keys(progressData.quiz_results || {}).length > 0
+        );
       } catch (err) {
         console.error(err);
       }
     };
 
-    fetchCourse();
+    fetchData();
   }, [id]);
 
+  // Toggle topic completion
   const toggleComplete = async (index) => {
     if (!user || !course) return;
 
@@ -54,20 +58,19 @@ const CoursePlayer = () => {
 
     setCompleted(updated);
 
-    // Save progress to backend
+    // Send update to backend
     try {
-      await fetch(`${API_BASE}/progress/${user.id}/${course.id}`, {
+      await fetch(`${API_BASE}/progress/${user.id}/${course.id}/topic`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completedTopics: updated }),
+        body: JSON.stringify({ topic_id: index }),
       });
     } catch (err) {
-      console.error("Failed to update progress:", err);
+      console.error("Failed to update topic progress:", err);
     }
   };
 
   const handleQuizClick = () => {
-    setQuizDone(false);
     navigate(`/quiz/${course.id}`);
   };
 
