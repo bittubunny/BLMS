@@ -2,18 +2,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./Quiz.css";
 
-const STORAGE_KEY = "courses";
+const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Quiz = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("currentUser"));
 
-  if (!user) {
-    return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
-  }
-
-  const progressKey = `progress-${user.email}`;
   const [course, setCourse] = useState(null);
   const [qIndex, setQIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -22,13 +17,45 @@ const Quiz = () => {
   const [quizLocked, setQuizLocked] = useState(false);
 
   useEffect(() => {
-    const courses = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    const found = courses.find((c) => c.id === Number(id));
-    setCourse(found || null);
+    if (!user) return;
 
-    // Prevent back navigation to previous quiz answers
-    window.history.replaceState({}, "");
-  }, [id]);
+    const fetchCourseAndProgress = async () => {
+      try {
+        // Fetch course details
+        const res = await fetch(`${API_BASE}/courses`);
+        if (!res.ok) throw new Error("Failed to fetch courses");
+        const courses = await res.json();
+        const selectedCourse = courses.find((c) => c.id === id);
+        if (!selectedCourse) throw new Error("Course not found");
+        setCourse(selectedCourse);
+
+        // Fetch user progress
+        const progressRes = await fetch(`${API_BASE}/progress/${user.id}/${id}`);
+        const progressData = await progressRes.json();
+
+        const quizResults = progressData.quiz_results || {};
+        const passed = Object.keys(quizResults).length
+          ? Object.values(quizResults)[0] / selectedCourse.quiz.length >= 0.6
+          : false;
+
+        if (passed) {
+          setScore(Object.values(quizResults)[0] || 0);
+          setFinished(true);
+          setCertUnlocked(true);
+          setQuizLocked(true);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCourseAndProgress();
+    window.history.replaceState({}, ""); // prevent back navigation
+  }, [id, user]);
+
+  if (!user) {
+    return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
+  }
 
   if (!course || !course.quiz || course.quiz.length === 0) {
     return <h2 style={{ padding: "40px" }}>No quiz found for this course</h2>;
@@ -36,8 +63,8 @@ const Quiz = () => {
 
   const quiz = course.quiz;
 
-  const answer = (option) => {
-    if (quizLocked) return; // prevent changing old answers
+  const answer = async (option) => {
+    if (quizLocked) return;
 
     const isCorrect = option === quiz[qIndex].answer;
     const newScore = isCorrect ? score + 1 : score;
@@ -47,47 +74,24 @@ const Quiz = () => {
       setQIndex(qIndex + 1);
     } else {
       const finalScore = newScore;
-      saveResult(finalScore);
       setScore(finalScore);
       setFinished(true);
       setQuizLocked(true);
       if (finalScore / quiz.length >= 0.6) setCertUnlocked(true);
 
-      // Replace history to prevent back navigation
+      // Save quiz result to backend
+      try {
+        await fetch(`${API_BASE}/progress/${user.id}/${course.id}/quiz`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quiz_id: "final", score: finalScore }),
+        });
+      } catch (err) {
+        console.error("Failed to save quiz result:", err);
+      }
+
       navigate("/dashboard", { replace: true });
     }
-  };
-
-  const saveResult = (finalScore) => {
-    const data = JSON.parse(localStorage.getItem(progressKey)) || {
-      courses: {},
-      certificates: {},
-    };
-
-    const verificationId = `BLMS-${course.title
-      .replace(/\s+/g, "")
-      .substring(0, 5)
-      .toUpperCase()}-${Math.random()
-      .toString(36)
-      .substring(2, 10)
-      .toUpperCase()}`;
-
-    data.courses[id] = {
-      quizScore: finalScore,
-      totalQuestions: quiz.length,
-      quizPassed: finalScore / quiz.length >= 0.6,
-      completedAt: new Date().toISOString(),
-    };
-
-    if (finalScore / quiz.length >= 0.6) {
-      data.certificates[id] = {
-        courseTitle: course.title,
-        verificationId,
-        issuedAt: new Date().toISOString(),
-      };
-    }
-
-    localStorage.setItem(progressKey, JSON.stringify(data));
   };
 
   const retakeQuiz = () => {
@@ -96,8 +100,6 @@ const Quiz = () => {
     setFinished(false);
     setCertUnlocked(false);
     setQuizLocked(false);
-
-    // Replace history to prevent back navigation issues
     window.history.replaceState({}, "");
   };
 
@@ -110,8 +112,8 @@ const Quiz = () => {
           </h3>
           <h4>{quiz[qIndex].question}</h4>
           <div className="quiz-options">
-            {quiz[qIndex].options.map((option, index) => (
-              <button key={index} onClick={() => answer(option)}>
+            {quiz[qIndex].options.map((option, idx) => (
+              <button key={idx} onClick={() => answer(option)}>
                 {option}
               </button>
             ))}
@@ -131,7 +133,10 @@ const Quiz = () => {
             <p className="certificate-locked">❌ Try Next Time</p>
           )}
 
-          <button className="dashboard-btn" onClick={() => navigate("/dashboard", { replace: true })}>
+          <button
+            className="dashboard-btn"
+            onClick={() => navigate("/dashboard", { replace: true })}
+          >
             Go to Dashboard
           </button>
 
