@@ -15,8 +15,11 @@ const CoursePlayer = () => {
 
   // Fetch course details and user progress
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!storedUser) return setUser(null);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) {
+      navigate("/"); // Redirect to login if not logged in
+      return;
+    }
     setUser(storedUser);
 
     const fetchData = async () => {
@@ -27,7 +30,7 @@ const CoursePlayer = () => {
         const selectedCourse = await courseRes.json();
         setCourse(selectedCourse);
 
-        // Fetch user progress for this course
+        // Fetch user progress for this course (now uses correct user.id)
         const progressRes = await fetch(
           `${API_BASE}/progress/${storedUser.id}/${id}`
         );
@@ -45,7 +48,7 @@ const CoursePlayer = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, navigate]);
 
   // Toggle topic completion
   const toggleComplete = async (index) => {
