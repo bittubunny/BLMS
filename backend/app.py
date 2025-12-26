@@ -12,12 +12,22 @@ app = Flask(__name__)
 # ---------------- CORS ----------------
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-# ---------------- DATABASE ----------------
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "database.db")
+# ---------------- DATABASE (PostgreSQL on Render) ----------------
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set")
+
+# Render may provide postgres:// but SQLAlchemy needs postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+
+# Create tables once at startup
 with app.app_context():
     db.create_all()
 
@@ -76,28 +86,22 @@ def home():
 @app.route("/courses", methods=["POST"])
 def add_course():
     data = request.get_json()
-    title = data.get("title")
-    description = data.get("description")
-    duration = data.get("duration")
-    image = data.get("image", "")
-    topics = data.get("topics", [])
-    quiz = data.get("quiz", [])
-
-    if not title or not description or not duration:
-        return jsonify({"message": "Title, description, and duration required"}), 400
 
     course = Course(
-        title=title,
-        description=description,
-        duration=duration,
-        image=image,
-        topics=json.dumps(topics),
-        quiz=json.dumps(quiz),
+        title=data.get("title"),
+        description=data.get("description"),
+        duration=data.get("duration"),
+        image=data.get("image", ""),
+        topics=json.dumps(data.get("topics", [])),
+        quiz=json.dumps(data.get("quiz", [])),
         created_at=int(time.time())
     )
+
+    if not course.title or not course.description or not course.duration:
+        return jsonify({"message": "Title, description, and duration required"}), 400
+
     db.session.add(course)
     db.session.commit()
-
     return jsonify({"message": "Course added successfully"}), 201
 
 @app.route("/courses", methods=["GET"])
@@ -120,6 +124,7 @@ def get_course(course_id):
     course = Course.query.get(course_id)
     if not course:
         return jsonify({"message": "Course not found"}), 404
+
     return jsonify({
         "id": course.id,
         "title": course.title,
@@ -135,6 +140,7 @@ def delete_course(course_id):
     course = Course.query.get(course_id)
     if not course:
         return jsonify({"message": "Course not found"}), 404
+
     db.session.delete(course)
     db.session.commit()
     return jsonify({"message": "Course deleted"}), 200
@@ -144,10 +150,12 @@ def delete_course(course_id):
 def update_topic(user_id, course_id):
     data = request.get_json()
     topic_id = data.get("topic_id")
+
     if topic_id is None:
         return jsonify({"message": "topic_id required"}), 400
 
     progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
+
     if not progress:
         progress = UserProgress(
             user_id=user_id,
@@ -174,11 +182,11 @@ def update_quiz(user_id, course_id):
     if quiz_id is None or score is None:
         return jsonify({"message": "quiz_id and score required"}), 400
 
-    # Get course quiz length automatically
     course = Course.query.get(course_id)
     total_questions = len(json.loads(course.quiz or "[]")) if course else 0
 
     progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
+
     if not progress:
         progress = UserProgress(
             user_id=user_id,
@@ -187,33 +195,18 @@ def update_quiz(user_id, course_id):
         )
         db.session.add(progress)
     else:
-        quiz_results = json.loads(progress.quiz_results or "{}")
-        quiz_results[quiz_id] = score
-        progress.quiz_results = json.dumps(quiz_results)
+        results = json.loads(progress.quiz_results or "{}")
+        results[quiz_id] = score
+        progress.quiz_results = json.dumps(results)
 
-    # ✅ Certificate earned if final score >= 60%
     if quiz_id == "final" and total_questions > 0:
         progress.certificate_earned = (score / total_questions) >= 0.6
 
     progress.last_updated = int(time.time())
     db.session.commit()
+
     return jsonify({
         "message": "Quiz updated",
-        "certificate_earned": progress.certificate_earned
-    }), 200
-
-@app.route("/progress/<string:user_id>/<string:course_id>", methods=["GET"])
-def get_progress(user_id, course_id):
-    progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
-    if not progress:
-        return jsonify({
-            "completed_topics": [],
-            "quiz_results": {},
-            "certificate_earned": False
-        }), 200
-    return jsonify({
-        "completed_topics": json.loads(progress.completed_topics or "[]"),
-        "quiz_results": json.loads(progress.quiz_results or "{}"),
         "certificate_earned": progress.certificate_earned
     }), 200
 
@@ -223,20 +216,15 @@ announcements_store = []
 @app.route("/announcements", methods=["POST"])
 def add_announcement():
     data = request.get_json()
-    title = data.get("title")
-    message = data.get("message")
-    type_ = data.get("type", "update")
-
-    if not title or not message:
-        return jsonify({"message": "Title and message required"}), 400
 
     announcements_store.append({
         "id": str(uuid.uuid4()),
-        "title": title,
-        "message": message,
-        "type": type_,
+        "title": data.get("title"),
+        "message": data.get("message"),
+        "type": data.get("type", "update"),
         "createdAt": int(time.time())
     })
+
     return jsonify({"message": "Announcement added"}), 201
 
 @app.route("/announcements", methods=["GET"])
