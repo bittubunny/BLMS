@@ -7,7 +7,7 @@ const API_BASE = "https://blms-fnj5.onrender.com";
 const Quiz = () => {
   const { id } = useParams(); // course ID
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const [course, setCourse] = useState(null);
   const [qIndex, setQIndex] = useState(0);
@@ -18,7 +18,10 @@ const Quiz = () => {
 
   // Fetch course and user progress
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      navigate("/"); // Redirect to login
+      return;
+    }
 
     const fetchCourseAndProgress = async () => {
       try {
@@ -28,7 +31,7 @@ const Quiz = () => {
         const selectedCourse = await res.json();
         setCourse(selectedCourse);
 
-        // Fetch user progress for this course
+        // Fetch user progress for this course (now uses correct user.id)
         const progressRes = await fetch(`${API_BASE}/progress/${user.id}/${id}`);
         const progressData = progressRes.ok ? await progressRes.json() : { quiz_results: {} };
 
@@ -53,7 +56,7 @@ const Quiz = () => {
     };
 
     fetchCourseAndProgress();
-  }, [id, user?.id]);
+  }, [id, user?.id, navigate]);
 
   if (!user) return <h2 style={{ padding: "40px" }}>Please login to take the quiz</h2>;
   if (!course) return <h2 style={{ padding: "40px" }}>Loading course...</h2>;
@@ -82,7 +85,7 @@ const Quiz = () => {
         await fetch(`${API_BASE}/progress/${user.id}/${course.id}/quiz`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quiz_id: "final", score: finalScore, total_questions: quiz.length }),
+          body: JSON.stringify({ quiz_id: "final", score: finalScore }),
         });
       } catch (err) {
         console.error("Failed to save quiz result:", err);
