@@ -29,16 +29,8 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // Store user
+        // Store user (only this, remove currentUser)
         localStorage.setItem("user", JSON.stringify(data.user));
-
-        // Required for LMS logic
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            username: data.user.name || data.user.email
-          })
-        );
 
         alert("Login successful");
         navigate("/home");
