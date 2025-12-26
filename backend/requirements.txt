@@ -1,5 +1,7 @@
 flask
 flask-cors
+psycopg2-binary
 flask-sqlalchemy
 werkzeug
 gunicorn
+
