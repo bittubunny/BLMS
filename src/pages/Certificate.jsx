@@ -15,8 +15,11 @@ const Certificate = () => {
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!storedUser) return;
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) {
+      navigate("/"); // Redirect to login
+      return;
+    }
     setUser(storedUser);
 
     const fetchCertificateData = async () => {
@@ -27,7 +30,7 @@ const Certificate = () => {
         const courseData = await courseRes.json();
         setCourse(courseData);
 
-        // 2. Fetch USER-SPECIFIC progress
+        // 2. Fetch USER-SPECIFIC progress (now uses correct user.id)
         const progressRes = await fetch(
           `${API_BASE}/progress/${storedUser.id}/${id}`
         );
@@ -52,7 +55,7 @@ const Certificate = () => {
     };
 
     fetchCertificateData();
-  }, [id]);
+  }, [id, navigate]);
 
   const download = () => {
     if (!passed || !user || !course) return;
