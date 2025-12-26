@@ -5,7 +5,7 @@ import "./Dashboard.css";
 const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Dashboard = () => {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const user = JSON.parse(localStorage.getItem("user"));
   const [courses, setCourses] = useState([]);
   const [progress, setProgress] = useState({});
   const [certificates, setCertificates] = useState({});
@@ -24,7 +24,7 @@ const Dashboard = () => {
         const certData = {};
 
         for (const course of coursesData) {
-          const progRes = await fetch(`${API_BASE}/progress/${user.id}/${course.id}`);
+          const progRes = await fetch(`${API_BASE}/progress/${user.id}/${course.id}`); // Now uses correct user.id
           const prog = progRes.ok ? await progRes.json() : { completed_topics: [], quiz_results: {}, certificate_earned: false };
 
           const quizScore = Object.values(prog.quiz_results || {})[0] || 0;
