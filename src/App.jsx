@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Certificate from "./pages/Certificate";
 import EditProfile from "./pages/EditProfile"; // import the new page
 import Announcements from "./pages/Announcements";
-import Users from "./pages/Users";
+import Users from "./admin/Users";
 // admin (separate, not part of main flow)
 import Add_Course from "./admin/Add_Course";
 
