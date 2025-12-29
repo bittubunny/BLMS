@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Course, UserProgress, Job  # <-- added Job model
+from models import db, User, Course, UserProgress, Job
 import os
 import json
 import time
@@ -68,6 +68,19 @@ def login():
         "message": "Login successful",
         "user": {"id": user.id, "name": user.name, "email": user.email}
     }), 200
+
+# ---------------- USERS (ADMIN DATABASE VIEW) ----------------
+@app.route("/users", methods=["GET"])
+def get_users():
+    users = User.query.order_by(User.id.desc()).all()
+    return jsonify([
+        {
+            "id": u.id,
+            "name": u.name,
+            "email": u.email
+        }
+        for u in users
+    ]), 200
 
 # ---------------- COURSES ----------------
 @app.route("/courses", methods=["POST"])
@@ -154,8 +167,8 @@ def get_progress(user_id, course_id):
 def update_topic(user_id, course_id):
     data = request.get_json()
     topic_id = data.get("topic_id")
-    progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
 
+    progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
     if not progress:
         progress = UserProgress(
             user_id=user_id,
@@ -221,13 +234,17 @@ def add_job():
     )
     db.session.add(job)
     db.session.commit()
-    return jsonify({"message": "Job added", "job": {
-        "id": job.id,
-        "title": job.title,
-        "company": job.company,
-        "link": job.link,
-        "createdAt": job.created_at
-    }}), 201
+
+    return jsonify({
+        "message": "Job added",
+        "job": {
+            "id": job.id,
+            "title": job.title,
+            "company": job.company,
+            "link": job.link,
+            "createdAt": job.created_at
+        }
+    }), 201
 
 
 @app.route("/jobs", methods=["GET"])
@@ -247,6 +264,7 @@ def delete_job(job_id):
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"message": "Job not found"}), 404
+
     db.session.delete(job)
     db.session.commit()
     return jsonify({"message": "Job deleted"}), 200
