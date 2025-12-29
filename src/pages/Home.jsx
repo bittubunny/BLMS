@@ -82,7 +82,7 @@ const Home = () => {
               <Link to="/edit-profile">Edit Profile</Link>
               <Link to="#">Request Demo</Link>
               <Link to="/dashboard">Dashboard</Link>
-              <Link to="/announcements">Announcements</Link>
+              <Link to="/announcements">Job Portal</Link>
               <button onClick={handleLogout}>Logout</button>
             </div>
           )}
@@ -319,3 +319,4 @@ const Home = () => {
 };
 
 export default Home;
+
