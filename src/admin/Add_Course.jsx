@@ -42,12 +42,12 @@ const AddCourse = () => {
     }
   };
 
-  /* ---------- FETCH JOBS (ANNOUNCEMENTS) ---------- */
+  /* ---------- FETCH JOBS ---------- */
   const fetchJobs = async () => {
     try {
-      const res = await fetch(`${API_BASE}/announcements`);
+      const res = await fetch(`${API_BASE}/jobs`);
       const data = await res.json();
-      setJobs(data.filter((a) => a.type === "job"));
+      setJobs(data);
     } catch (err) {
       console.error(err);
     }
@@ -132,17 +132,20 @@ const AddCourse = () => {
       return;
     }
 
-    await fetch(`${API_BASE}/announcements`, {
+    await fetch(`${API_BASE}/jobs`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: `${job.role} - ${job.company}`,
-        message: job.link,
-        type: "job",
-      }),
+      body: JSON.stringify(job),
     });
 
     setJob({ role: "", company: "", link: "" });
+    fetchJobs();
+  };
+
+  /* ---------- REMOVE JOB ---------- */
+  const removeJob = async (id) => {
+    if (!window.confirm("Delete this job?")) return;
+    await fetch(`${API_BASE}/jobs/${id}`, { method: "DELETE" });
     fetchJobs();
   };
 
@@ -150,8 +153,15 @@ const AddCourse = () => {
     return (
       <div className="admin-login">
         <h2>Admin Login</h2>
-        <input placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
-        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+        <input
+          placeholder="Username"
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <button onClick={loginAdmin}>Login</button>
       </div>
     );
@@ -162,34 +172,59 @@ const AddCourse = () => {
       {/* ================= COURSES ================= */}
       <h2>Add Course</h2>
 
-      <input placeholder="Course Title" value={course.title}
-        onChange={(e) => setCourse({ ...course, title: e.target.value })} />
+      <input
+        placeholder="Course Title"
+        value={course.title}
+        onChange={(e) => setCourse({ ...course, title: e.target.value })}
+      />
 
-      <input placeholder="Duration" value={course.duration}
-        onChange={(e) => setCourse({ ...course, duration: e.target.value })} />
+      <input
+        placeholder="Duration"
+        value={course.duration}
+        onChange={(e) => setCourse({ ...course, duration: e.target.value })}
+      />
 
-      <textarea placeholder="Description"
+      <textarea
+        placeholder="Description"
         value={course.description}
         maxLength={MAX_DESC_LENGTH}
-        onChange={(e) => setCourse({ ...course, description: e.target.value })} />
+        onChange={(e) => setCourse({ ...course, description: e.target.value })}
+      />
 
       <h3>Add Topics</h3>
-      <input placeholder="Topic Title" value={topic.title}
-        onChange={(e) => setTopic({ ...topic, title: e.target.value })} />
-      <textarea placeholder="Topic Content" value={topic.content}
-        onChange={(e) => setTopic({ ...topic, content: e.target.value })} />
+      <input
+        placeholder="Topic Title"
+        value={topic.title}
+        onChange={(e) => setTopic({ ...topic, title: e.target.value })}
+      />
+      <textarea
+        placeholder="Topic Content"
+        value={topic.content}
+        onChange={(e) => setTopic({ ...topic, content: e.target.value })}
+      />
       <button onClick={addTopic}>Add Topic</button>
 
       <h3>Add Quiz</h3>
-      <input placeholder="Question" value={quiz.question}
-        onChange={(e) => setQuiz({ ...quiz, question: e.target.value })} />
-      <input placeholder="Options" value={quiz.options}
-        onChange={(e) => setQuiz({ ...quiz, options: e.target.value })} />
-      <input placeholder="Answer" value={quiz.answer}
-        onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })} />
+      <input
+        placeholder="Question"
+        value={quiz.question}
+        onChange={(e) => setQuiz({ ...quiz, question: e.target.value })}
+      />
+      <input
+        placeholder="Options (comma separated)"
+        value={quiz.options}
+        onChange={(e) => setQuiz({ ...quiz, options: e.target.value })}
+      />
+      <input
+        placeholder="Answer"
+        value={quiz.answer}
+        onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })}
+      />
       <button onClick={addQuiz}>Add Quiz</button>
 
-      <button className="add-course-btn" onClick={addCourse}>Add Course</button>
+      <button className="add-course-btn" onClick={addCourse}>
+        Add Course
+      </button>
 
       <h3>Existing Courses</h3>
       {courses.map((c) => (
@@ -204,24 +239,31 @@ const AddCourse = () => {
       {/* ================= JOBS ================= */}
       <h2>Add Job Opening</h2>
 
-      <input placeholder="Job Role"
+      <input
+        placeholder="Job Role"
         value={job.role}
-        onChange={(e) => setJob({ ...job, role: e.target.value })} />
+        onChange={(e) => setJob({ ...job, role: e.target.value })}
+      />
 
-      <input placeholder="Company Name"
+      <input
+        placeholder="Company Name"
         value={job.company}
-        onChange={(e) => setJob({ ...job, company: e.target.value })} />
+        onChange={(e) => setJob({ ...job, company: e.target.value })}
+      />
 
-      <input placeholder="Application Link"
+      <input
+        placeholder="Application Link"
         value={job.link}
-        onChange={(e) => setJob({ ...job, link: e.target.value })} />
+        onChange={(e) => setJob({ ...job, link: e.target.value })}
+      />
 
       <button onClick={addJob}>Add Job</button>
 
       <h3>Posted Jobs</h3>
       {jobs.map((j) => (
         <div key={j.id} className="admin-course-item">
-          <strong>{j.title}</strong>
+          <strong>{j.role} - {j.company}</strong>
+          <button onClick={() => removeJob(j.id)}>❌</button>
         </div>
       ))}
     </div>
