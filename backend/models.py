@@ -59,3 +59,14 @@ class UserProgress(db.Model):
         results = json.loads(self.quiz_results or "{}")
         results[quiz_id] = score
         self.quiz_results = json.dumps(results)
+
+
+# ---------------- JOB MODEL ----------------
+class Job(db.Model):
+    __tablename__ = "jobs"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = db.Column(db.String(200), nullable=False)
+    company = db.Column(db.String(200), nullable=False)
+    link = db.Column(db.String(300), nullable=False)  # URL to apply
+    created_at = db.Column(db.Integer)
