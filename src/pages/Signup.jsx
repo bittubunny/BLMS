@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Signup.css";
 
-const API_URL = import.meta.env.VITE_API_URL; // Use environment variable
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: ""
   });
+  const [message, setMessage] = useState(""); // For non-blocking messages
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,19 +30,20 @@ const Signup = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Signup successful. Please login.");
+        setMessage("Signup successful! Redirecting to login...");
+        // Redirect after 2 seconds
+        setTimeout(() => navigate("/"), 2000);
       } else {
-        alert(data.message);
+        setMessage(data.message);
       }
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again.");
+      setMessage("Server error. Please try again.");
     }
   };
 
   return (
     <div className="auth-page">
-      {/* LEFT SIDE – SIGNUP FORM */}
       <div className="auth-left">
         <form className="auth-card" onSubmit={handleSubmit}>
           <h2>Create Account</h2>
@@ -73,13 +76,14 @@ const Signup = () => {
 
           <button type="submit">Register</button>
 
+          {message && <p className="status-message">{message}</p>}
+
           <p className="switch-text">
             Already Registered? <Link to="/">Login</Link>
           </p>
         </form>
       </div>
 
-      {/* RIGHT SIDE – BRANDING */}
       <div className="auth-right">
         <h1>BLMS</h1>
         <p>Learning Journey For Everyone</p>
