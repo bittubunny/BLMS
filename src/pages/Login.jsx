@@ -6,11 +6,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     email: "",
     password: ""
   });
+  const [message, setMessage] = useState(""); // For non-blocking messages
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -29,17 +29,15 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // Store user (only this, remove currentUser)
         localStorage.setItem("user", JSON.stringify(data.user));
-
-        alert("Login successful");
+        // Navigate immediately without alert
         navigate("/home");
       } else {
-        alert(data.message);
+        setMessage(data.message);
       }
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again.");
+      setMessage("Server error. Please try again.");
     }
   };
 
@@ -68,6 +66,8 @@ const Login = () => {
           />
 
           <button type="submit">Login</button>
+
+          {message && <p className="status-message">{message}</p>}
 
           <p className="switch-text">
             Register as New User? <Link to="/signup">Signup</Link>
