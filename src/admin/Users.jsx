@@ -1,22 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Users.css";
 
 const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Users = () => {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest"); // newest | az | za
 
+  /* ================= ADMIN PROTECTION ================= */
+  useEffect(() => {
+    const isAdmin = localStorage.getItem("isAdmin");
+    if (isAdmin !== "true") {
+      alert("Unauthorized access");
+      navigate("/home");
+    }
+  }, [navigate]);
+
+  /* ================= FETCH USERS ================= */
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${API_BASE}/users`);
       const data = await res.json();
-
-      // 🔽 newest users first (assuming backend returns in created order)
-      const sorted = [...data].reverse();
-
-      setUsers(sorted);
+      setUsers(data);
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch users", err);
@@ -25,26 +35,54 @@ const Users = () => {
 
   useEffect(() => {
     fetchUsers();
-
-    // 🔄 live refresh every 5 seconds
-    const interval = setInterval(fetchUsers, 5000);
+    const interval = setInterval(fetchUsers, 5000); // 🔄 live refresh
     return () => clearInterval(interval);
   }, []);
 
-  // 🔍 filter users by name or email
-  const filteredUsers = useMemo(() => {
-    return users.filter(
+  /* ================= FILTER + SORT ================= */
+  const processedUsers = useMemo(() => {
+    let filtered = users.filter(
       (u) =>
         u.name.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase())
     );
-  }, [users, search]);
+
+    if (sortOrder === "az") {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOrder === "za") {
+      filtered.sort((a, b) => b.name.localeCompare(a.name));
+    } else {
+      // newest first (fallback using array order)
+      filtered = [...filtered].reverse();
+    }
+
+    return filtered;
+  }, [users, search, sortOrder]);
+
+  /* ================= EXPORT CSV ================= */
+  const exportCSV = () => {
+    const headers = ["ID", "Name", "Email"];
+    const rows = processedUsers.map((u) => [u.id, u.name, u.email]);
+
+    let csv = headers.join(",") + "\n";
+    rows.forEach((row) => {
+      csv += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "users.csv";
+    a.click();
+  };
 
   return (
     <div className="users-page">
       <h1>👤 Users Database</h1>
 
-      {/* 🔍 SEARCH BAR */}
+      {/* ================= CONTROLS ================= */}
       <div className="users-controls">
         <input
           type="text"
@@ -53,11 +91,25 @@ const Users = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
 
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="newest">Newest First</option>
+          <option value="az">Name A–Z</option>
+          <option value="za">Name Z–A</option>
+        </select>
+
+        <button className="export-btn" onClick={exportCSV}>
+          Export CSV
+        </button>
+
         <span className="count">
-          Total Users: {filteredUsers.length}
+          Total Users: {processedUsers.length}
         </span>
       </div>
 
+      {/* ================= TABLE ================= */}
       {loading ? (
         <p className="loading">Loading users...</p>
       ) : (
@@ -66,14 +118,14 @@ const Users = () => {
             <thead>
               <tr>
                 <th>#</th>
-                <th>User ID</th>
+                <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredUsers.map((user, index) => (
+              {processedUsers.map((user, index) => (
                 <tr key={user.id}>
                   <td>{index + 1}</td>
                   <td className="mono">{user.id}</td>
@@ -84,7 +136,7 @@ const Users = () => {
             </tbody>
           </table>
 
-          {filteredUsers.length === 0 && (
+          {processedUsers.length === 0 && (
             <p className="empty">No users found</p>
           )}
         </div>
