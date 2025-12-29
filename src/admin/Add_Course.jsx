@@ -26,7 +26,7 @@ const AddCourse = () => {
   /* ================= JOBS ================= */
   const [jobs, setJobs] = useState([]);
   const [job, setJob] = useState({
-    role: "",
+    title: "",
     company: "",
     link: "",
   });
@@ -38,7 +38,7 @@ const AddCourse = () => {
       const data = await res.json();
       setCourses(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching courses:", err);
     }
   };
 
@@ -49,7 +49,7 @@ const AddCourse = () => {
       const data = await res.json();
       setJobs(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching jobs:", err);
     }
   };
 
@@ -71,14 +71,20 @@ const AddCourse = () => {
 
   /* ---------- ADD TOPIC ---------- */
   const addTopic = () => {
-    if (!topic.title || !topic.content) return;
+    if (!topic.title || !topic.content) {
+      alert("Topic title and content cannot be empty");
+      return;
+    }
     setCourse({ ...course, topics: [...course.topics, topic] });
     setTopic({ title: "", content: "" });
   };
 
   /* ---------- ADD QUIZ ---------- */
   const addQuiz = () => {
-    if (!quiz.question || !quiz.options || !quiz.answer) return;
+    if (!quiz.question || !quiz.options || !quiz.answer) {
+      alert("Quiz question, options, and answer cannot be empty");
+      return;
+    }
     setCourse({
       ...course,
       quiz: [
@@ -96,57 +102,73 @@ const AddCourse = () => {
   /* ---------- ADD COURSE ---------- */
   const addCourse = async () => {
     if (!course.title || !course.description || !course.duration) {
-      alert("Fill all required fields");
+      alert("Please fill all required course fields");
       return;
     }
 
-    await fetch(`${API_BASE}/courses`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(course),
-    });
+    try {
+      await fetch(`${API_BASE}/courses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(course),
+      });
 
-    setCourse({
-      title: "",
-      description: "",
-      duration: "",
-      image: "",
-      topics: [],
-      quiz: [],
-    });
+      setCourse({
+        title: "",
+        description: "",
+        duration: "",
+        image: "",
+        topics: [],
+        quiz: [],
+      });
 
-    fetchCourses();
+      fetchCourses();
+    } catch (err) {
+      console.error("Error adding course:", err);
+    }
   };
 
   /* ---------- REMOVE COURSE ---------- */
   const removeCourse = async (id) => {
-    if (!window.confirm("Delete this course?")) return;
-    await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
-    fetchCourses();
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+    try {
+      await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
+      fetchCourses();
+    } catch (err) {
+      console.error("Error deleting course:", err);
+    }
   };
 
   /* ---------- ADD JOB ---------- */
   const addJob = async () => {
-    if (!job.role || !job.company || !job.link) {
-      alert("Fill all job fields");
+    if (!job.title || !job.company || !job.link) {
+      alert("Please fill all job fields");
       return;
     }
 
-    await fetch(`${API_BASE}/jobs`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(job),
-    });
+    try {
+      await fetch(`${API_BASE}/jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(job),
+      });
 
-    setJob({ role: "", company: "", link: "" });
-    fetchJobs();
+      setJob({ title: "", company: "", link: "" });
+      fetchJobs();
+    } catch (err) {
+      console.error("Error adding job:", err);
+    }
   };
 
   /* ---------- REMOVE JOB ---------- */
   const removeJob = async (id) => {
-    if (!window.confirm("Delete this job?")) return;
-    await fetch(`${API_BASE}/jobs/${id}`, { method: "DELETE" });
-    fetchJobs();
+    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    try {
+      await fetch(`${API_BASE}/jobs/${id}`, { method: "DELETE" });
+      fetchJobs();
+    } catch (err) {
+      console.error("Error deleting job:", err);
+    }
   };
 
   if (!auth) {
@@ -155,11 +177,13 @@ const AddCourse = () => {
         <h2>Admin Login</h2>
         <input
           placeholder="Username"
+          value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
         <button onClick={loginAdmin}>Login</button>
@@ -171,19 +195,16 @@ const AddCourse = () => {
     <div className="add-course">
       {/* ================= COURSES ================= */}
       <h2>Add Course</h2>
-
       <input
         placeholder="Course Title"
         value={course.title}
         onChange={(e) => setCourse({ ...course, title: e.target.value })}
       />
-
       <input
         placeholder="Duration"
         value={course.duration}
         onChange={(e) => setCourse({ ...course, duration: e.target.value })}
       />
-
       <textarea
         placeholder="Description"
         value={course.description}
@@ -227,6 +248,7 @@ const AddCourse = () => {
       </button>
 
       <h3>Existing Courses</h3>
+      {courses.length === 0 && <p>No courses available</p>}
       {courses.map((c) => (
         <div key={c.id} className="admin-course-item">
           <strong>{c.title}</strong>
@@ -238,31 +260,28 @@ const AddCourse = () => {
 
       {/* ================= JOBS ================= */}
       <h2>Add Job Opening</h2>
-
       <input
-        placeholder="Job Role"
-        value={job.role}
-        onChange={(e) => setJob({ ...job, role: e.target.value })}
+        placeholder="Job Title"
+        value={job.title}
+        onChange={(e) => setJob({ ...job, title: e.target.value })}
       />
-
       <input
         placeholder="Company Name"
         value={job.company}
         onChange={(e) => setJob({ ...job, company: e.target.value })}
       />
-
       <input
         placeholder="Application Link"
         value={job.link}
         onChange={(e) => setJob({ ...job, link: e.target.value })}
       />
-
       <button onClick={addJob}>Add Job</button>
 
       <h3>Posted Jobs</h3>
+      {jobs.length === 0 && <p>No job openings</p>}
       {jobs.map((j) => (
         <div key={j.id} className="admin-course-item">
-          <strong>{j.role} - {j.company}</strong>
+          <strong>{j.title} - {j.company}</strong>
           <button onClick={() => removeJob(j.id)}>❌</button>
         </div>
       ))}
