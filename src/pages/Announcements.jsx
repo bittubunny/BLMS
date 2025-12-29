@@ -38,7 +38,7 @@ const Announcements = () => {
         <div key={job.id} className="announcement-card">
           <span className="tag job">JOB</span>
 
-          <h3>{job.role}</h3>
+          <h3>{job.title}</h3>
           <p><strong>Company:</strong> {job.company}</p>
 
           <a
@@ -60,3 +60,4 @@ const Announcements = () => {
 };
 
 export default Announcements;
+
