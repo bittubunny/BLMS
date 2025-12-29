@@ -4,53 +4,54 @@ import "./Announcements.css";
 const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Announcements = () => {
-  const [announcements, setAnnouncements] = useState([]);
+  const [jobs, setJobs] = useState([]);
 
-  // Fetch announcements from backend
-  const fetchAnnouncements = async () => {
+  const fetchJobs = async () => {
     try {
-      const res = await fetch(`${API_BASE}/announcements`);
-      if (!res.ok) throw new Error("Failed to fetch announcements");
+      const res = await fetch(`${API_BASE}/jobs`);
+      if (!res.ok) throw new Error("Failed to fetch jobs");
       const data = await res.json();
 
-      // Sort latest first
       data.sort((a, b) => b.createdAt - a.createdAt);
-      setAnnouncements(data);
+      setJobs(data);
     } catch (err) {
       console.error(err);
-      setAnnouncements([]);
+      setJobs([]);
     }
   };
 
   useEffect(() => {
-    fetchAnnouncements();
-    // Optional: refetch when tab gains focus
-    window.addEventListener("focus", fetchAnnouncements);
-
-    return () => {
-      window.removeEventListener("focus", fetchAnnouncements);
-    };
+    fetchJobs();
+    window.addEventListener("focus", fetchJobs);
+    return () => window.removeEventListener("focus", fetchJobs);
   }, []);
 
   return (
     <div className="announcements-page">
-      <h1>📢 Announcements</h1>
+      <h1>💼 Job Openings</h1>
 
-      {announcements.length === 0 && (
-        <p className="empty">No announcements yet</p>
+      {jobs.length === 0 && (
+        <p className="empty">No job openings yet</p>
       )}
 
-      {announcements.map((a) => (
-        <div key={a.id} className="announcement-card">
-          <span className={`tag ${a.type}`}>
-            {a.type.toUpperCase()}
-          </span>
+      {jobs.map((job) => (
+        <div key={job.id} className="announcement-card">
+          <span className="tag job">JOB</span>
 
-          <h3>{a.title}</h3>
-          <p>{a.message}</p>
+          <h3>{job.role}</h3>
+          <p><strong>Company:</strong> {job.company}</p>
+
+          <a
+            href={job.link}
+            target="_blank"
+            rel="noreferrer"
+            className="job-link"
+          >
+            Apply Now →
+          </a>
 
           <small>
-            {new Date(a.createdAt * 1000).toDateString()}
+            Posted on {new Date(job.createdAt * 1000).toDateString()}
           </small>
         </div>
       ))}
