@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Course, UserProgress
+from models import db, User, Course, UserProgress, Job  # <-- added Job model
 import os
 import json
 import time
@@ -37,7 +37,6 @@ def health():
 @app.route("/signup", methods=["POST"])
 def signup():
     data = request.get_json()
-
     if not all(k in data for k in ("name", "email", "password")):
         return jsonify({"message": "All fields required"}), 400
 
@@ -61,7 +60,6 @@ def signup():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-
     user = User.query.filter_by(email=data.get("email")).first()
     if not user or not check_password_hash(user.password, data.get("password")):
         return jsonify({"message": "Invalid credentials"}), 401
@@ -75,7 +73,6 @@ def login():
 @app.route("/courses", methods=["POST"])
 def add_course():
     data = request.get_json()
-
     if not all(k in data for k in ("title", "description", "duration")):
         return jsonify({"message": "Missing fields"}), 400
 
@@ -138,11 +135,7 @@ def delete_course(course_id):
 # ---------------- PROGRESS ----------------
 @app.route("/progress/<string:user_id>/<string:course_id>", methods=["GET"])
 def get_progress(user_id, course_id):
-    progress = UserProgress.query.filter_by(
-        user_id=user_id,
-        course_id=course_id
-    ).first()
-
+    progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
     if not progress:
         return jsonify({
             "completed_topics": [],
@@ -161,11 +154,7 @@ def get_progress(user_id, course_id):
 def update_topic(user_id, course_id):
     data = request.get_json()
     topic_id = data.get("topic_id")
-
-    progress = UserProgress.query.filter_by(
-        user_id=user_id,
-        course_id=course_id
-    ).first()
+    progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
 
     if not progress:
         progress = UserProgress(
@@ -194,11 +183,7 @@ def update_quiz(user_id, course_id):
     course = Course.query.get(course_id)
     total = len(json.loads(course.quiz or "[]")) if course else 0
 
-    progress = UserProgress.query.filter_by(
-        user_id=user_id,
-        course_id=course_id
-    ).first()
-
+    progress = UserProgress.query.filter_by(user_id=user_id, course_id=course_id).first()
     if not progress:
         progress = UserProgress(
             user_id=user_id,
@@ -216,33 +201,55 @@ def update_quiz(user_id, course_id):
 
     progress.last_updated = int(time.time())
     db.session.commit()
-
     return jsonify({
         "message": "Quiz updated",
         "certificate_earned": progress.certificate_earned
     }), 200
 
-# ---------------- ANNOUNCEMENTS ----------------
-announcements_store = []
-
-@app.route("/announcements", methods=["POST"])
-def add_announcement():
+# ---------------- JOBS ----------------
+@app.route("/jobs", methods=["POST"])
+def add_job():
     data = request.get_json()
-    announcements_store.append({
-        "id": str(uuid.uuid4()),
-        "title": data.get("title"),
-        "message": data.get("message"),
-        "type": data.get("type", "update"),
-        "createdAt": int(time.time())
-    })
-    return jsonify({"message": "Announcement added"}), 201
+    if not all(k in data for k in ("title", "company", "link")):
+        return jsonify({"message": "Missing fields"}), 400
+
+    job = Job(
+        title=data["title"],
+        company=data["company"],
+        link=data["link"],
+        created_at=int(time.time())
+    )
+    db.session.add(job)
+    db.session.commit()
+    return jsonify({"message": "Job added", "job": {
+        "id": job.id,
+        "title": job.title,
+        "company": job.company,
+        "link": job.link,
+        "createdAt": job.created_at
+    }}), 201
 
 
-@app.route("/announcements", methods=["GET"])
-def get_announcements():
-    return jsonify(
-        sorted(announcements_store, key=lambda x: x["createdAt"], reverse=True)
-    ), 200
+@app.route("/jobs", methods=["GET"])
+def get_jobs():
+    jobs = Job.query.order_by(Job.created_at.desc()).all()
+    return jsonify([{
+        "id": j.id,
+        "title": j.title,
+        "company": j.company,
+        "link": j.link,
+        "createdAt": j.created_at
+    } for j in jobs]), 200
+
+
+@app.route("/jobs/<string:job_id>", methods=["DELETE"])
+def delete_job(job_id):
+    job = Job.query.get(job_id)
+    if not job:
+        return jsonify({"message": "Job not found"}), 404
+    db.session.delete(job)
+    db.session.commit()
+    return jsonify({"message": "Job deleted"}), 200
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
