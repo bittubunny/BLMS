@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import "./Add_Course.css";
 
 const MAX_DESC_LENGTH = 200;
-const API_BASE = "https://blms-fnj5.onrender.com"; // backend URL
+const API_BASE = "https://blms-fnj5.onrender.com";
 
 const AddCourse = () => {
   const [auth, setAuth] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  /* ================= COURSES ================= */
   const [courses, setCourses] = useState([]);
   const [course, setCourse] = useState({
     title: "",
@@ -22,21 +23,39 @@ const AddCourse = () => {
   const [topic, setTopic] = useState({ title: "", content: "" });
   const [quiz, setQuiz] = useState({ question: "", options: "", answer: "" });
 
+  /* ================= JOBS ================= */
+  const [jobs, setJobs] = useState([]);
+  const [job, setJob] = useState({
+    role: "",
+    company: "",
+    link: "",
+  });
+
   /* ---------- FETCH COURSES ---------- */
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_BASE}/courses`);
-      if (!res.ok) throw new Error("Failed to fetch courses");
       const data = await res.json();
       setCourses(data);
     } catch (err) {
-      console.error("Failed to fetch courses:", err);
-      setCourses([]);
+      console.error(err);
+    }
+  };
+
+  /* ---------- FETCH JOBS (ANNOUNCEMENTS) ---------- */
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/announcements`);
+      const data = await res.json();
+      setJobs(data.filter((a) => a.type === "job"));
+    } catch (err) {
+      console.error(err);
     }
   };
 
   useEffect(() => {
     fetchCourses();
+    fetchJobs();
     if (localStorage.getItem("isAdmin") === "true") setAuth(true);
   }, []);
 
@@ -53,98 +72,86 @@ const AddCourse = () => {
   /* ---------- ADD TOPIC ---------- */
   const addTopic = () => {
     if (!topic.title || !topic.content) return;
-    setCourse({ ...course, topics: [...course.topics, { ...topic }] });
+    setCourse({ ...course, topics: [...course.topics, topic] });
     setTopic({ title: "", content: "" });
   };
 
   /* ---------- ADD QUIZ ---------- */
   const addQuiz = () => {
     if (!quiz.question || !quiz.options || !quiz.answer) return;
-    const formattedQuiz = {
-      question: quiz.question,
-      options: quiz.options.split(",").map((o) => o.trim()),
-      answer: quiz.answer,
-    };
-    setCourse({ ...course, quiz: [...course.quiz, formattedQuiz] });
+    setCourse({
+      ...course,
+      quiz: [
+        ...course.quiz,
+        {
+          question: quiz.question,
+          options: quiz.options.split(",").map((o) => o.trim()),
+          answer: quiz.answer,
+        },
+      ],
+    });
     setQuiz({ question: "", options: "", answer: "" });
   };
 
-  /* ---------- ADD COURSE TO BACKEND ---------- */
+  /* ---------- ADD COURSE ---------- */
   const addCourse = async () => {
     if (!course.title || !course.description || !course.duration) {
-      alert("Please fill all required fields");
-      return;
-    }
-    if (course.description.length > MAX_DESC_LENGTH) {
-      alert(`Description must be under ${MAX_DESC_LENGTH} characters`);
-      return;
-    }
-    if (course.topics.length === 0) {
-      alert("Add at least one topic");
+      alert("Fill all required fields");
       return;
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/courses`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(course),
-      });
+    await fetch(`${API_BASE}/courses`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(course),
+    });
 
-      if (!res.ok) throw new Error("Failed to add course");
+    setCourse({
+      title: "",
+      description: "",
+      duration: "",
+      image: "",
+      topics: [],
+      quiz: [],
+    });
 
-      const data = await res.json();
-      alert(`Course "${data.course.title}" added successfully!`);
-
-      // Clear the form
-      setCourse({
-        title: "",
-        description: "",
-        duration: "",
-        image: "",
-        topics: [],
-        quiz: [],
-      });
-
-      // Refetch courses globally so all users see the new course
-      fetchCourses();
-    } catch (err) {
-      console.error(err);
-      alert("Error adding course");
-    }
+    fetchCourses();
   };
 
   /* ---------- REMOVE COURSE ---------- */
   const removeCourse = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete course");
-
-      fetchCourses();
-    } catch (err) {
-      console.error(err);
-      alert("Error deleting course");
-    }
+    if (!window.confirm("Delete this course?")) return;
+    await fetch(`${API_BASE}/courses/${id}`, { method: "DELETE" });
+    fetchCourses();
   };
 
-  /* ---------- RENDER ---------- */
+  /* ---------- ADD JOB ---------- */
+  const addJob = async () => {
+    if (!job.role || !job.company || !job.link) {
+      alert("Fill all job fields");
+      return;
+    }
+
+    await fetch(`${API_BASE}/announcements`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: `${job.role} - ${job.company}`,
+        message: job.link,
+        type: "job",
+      }),
+    });
+
+    setJob({ role: "", company: "", link: "" });
+    fetchJobs();
+  };
+
   if (!auth) {
     return (
       <div className="admin-login">
         <h2>Admin Login</h2>
-        <input
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <input placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
+        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
         <button onClick={loginAdmin}>Login</button>
       </div>
     );
@@ -152,73 +159,69 @@ const AddCourse = () => {
 
   return (
     <div className="add-course">
+      {/* ================= COURSES ================= */}
       <h2>Add Course</h2>
-      <input
-        placeholder="Course Title"
-        value={course.title}
-        onChange={(e) => setCourse({ ...course, title: e.target.value })}
-      />
-      <input
-        placeholder="Duration"
-        value={course.duration}
-        onChange={(e) => setCourse({ ...course, duration: e.target.value })}
-      />
-      <input
-        placeholder="Image URL"
-        value={course.image}
-        onChange={(e) => setCourse({ ...course, image: e.target.value })}
-      />
-      <textarea
-        placeholder="Course Description"
-        maxLength={MAX_DESC_LENGTH}
+
+      <input placeholder="Course Title" value={course.title}
+        onChange={(e) => setCourse({ ...course, title: e.target.value })} />
+
+      <input placeholder="Duration" value={course.duration}
+        onChange={(e) => setCourse({ ...course, duration: e.target.value })} />
+
+      <textarea placeholder="Description"
         value={course.description}
-        onChange={(e) => setCourse({ ...course, description: e.target.value })}
-      />
-      <p className="char-count">{course.description.length}/{MAX_DESC_LENGTH}</p>
+        maxLength={MAX_DESC_LENGTH}
+        onChange={(e) => setCourse({ ...course, description: e.target.value })} />
 
       <h3>Add Topics</h3>
-      <input
-        placeholder="Topic Title"
-        value={topic.title}
-        onChange={(e) => setTopic({ ...topic, title: e.target.value })}
-      />
-      <textarea
-        placeholder="Topic Content"
-        value={topic.content}
-        onChange={(e) => setTopic({ ...topic, content: e.target.value })}
-      />
+      <input placeholder="Topic Title" value={topic.title}
+        onChange={(e) => setTopic({ ...topic, title: e.target.value })} />
+      <textarea placeholder="Topic Content" value={topic.content}
+        onChange={(e) => setTopic({ ...topic, content: e.target.value })} />
       <button onClick={addTopic}>Add Topic</button>
 
-      <h3>Add Quiz Questions</h3>
-      <input
-        placeholder="Question"
-        value={quiz.question}
-        onChange={(e) => setQuiz({ ...quiz, question: e.target.value })}
-      />
-      <input
-        placeholder="Options (comma separated)"
-        value={quiz.options}
-        onChange={(e) => setQuiz({ ...quiz, options: e.target.value })}
-      />
-      <input
-        placeholder="Correct Answer"
-        value={quiz.answer}
-        onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })}
-      />
-      <button onClick={addQuiz}>Add Quiz Question</button>
+      <h3>Add Quiz</h3>
+      <input placeholder="Question" value={quiz.question}
+        onChange={(e) => setQuiz({ ...quiz, question: e.target.value })} />
+      <input placeholder="Options" value={quiz.options}
+        onChange={(e) => setQuiz({ ...quiz, options: e.target.value })} />
+      <input placeholder="Answer" value={quiz.answer}
+        onChange={(e) => setQuiz({ ...quiz, answer: e.target.value })} />
+      <button onClick={addQuiz}>Add Quiz</button>
 
       <button className="add-course-btn" onClick={addCourse}>Add Course</button>
 
       <h3>Existing Courses</h3>
-      {courses.length === 0 && <p>No courses added yet</p>}
       {courses.map((c) => (
-        <div className="admin-course-item" key={c.id}>
-          <div>
-            <strong>{c.title}</strong>
-            <p>{c.duration}</p>
-            <p>{c.topics.length} Topics | {c.quiz.length} Quiz Questions</p>
-          </div>
-          <button className="remove-btn" onClick={() => removeCourse(c.id)}>❌ Remove</button>
+        <div key={c.id} className="admin-course-item">
+          <strong>{c.title}</strong>
+          <button onClick={() => removeCourse(c.id)}>❌</button>
+        </div>
+      ))}
+
+      <hr />
+
+      {/* ================= JOBS ================= */}
+      <h2>Add Job Opening</h2>
+
+      <input placeholder="Job Role"
+        value={job.role}
+        onChange={(e) => setJob({ ...job, role: e.target.value })} />
+
+      <input placeholder="Company Name"
+        value={job.company}
+        onChange={(e) => setJob({ ...job, company: e.target.value })} />
+
+      <input placeholder="Application Link"
+        value={job.link}
+        onChange={(e) => setJob({ ...job, link: e.target.value })} />
+
+      <button onClick={addJob}>Add Job</button>
+
+      <h3>Posted Jobs</h3>
+      {jobs.map((j) => (
+        <div key={j.id} className="admin-course-item">
+          <strong>{j.title}</strong>
         </div>
       ))}
     </div>
