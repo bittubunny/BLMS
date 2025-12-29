@@ -1,62 +1,103 @@
+/* ================= GLOBAL ================= */
 .announcements-page {
-  padding: 60px;
-  background: #f9fafc;
-  min-height: 100vh;
-  font-family: "Segoe UI", Tahoma, sans-serif;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #1f2937;
 }
 
-.announcements-page h1 {
-  font-size: 32px;
-  margin-bottom: 30px;
-  color: #2c3e50;
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #111827;
 }
 
+/* ================= EMPTY STATE ================= */
 .empty {
-  color: #777;
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
 }
 
+/* ================= CARD ================= */
 .announcement-card {
-  background: #fff;
-  padding: 24px;
+  background-color: #ffffff;
   border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
 }
 
+.announcement-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ================= TAG ================= */
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.tag.job {
+  background-color: #f3f4f6;
+  color: #4f46e5;
+}
+
+/* ================= CARD CONTENT ================= */
 .announcement-card h3 {
-  margin: 10px 0;
-  color: #333;
+  font-size: 1.25rem;
+  margin: 0.25rem 0 0.5rem 0;
+  color: #111827;
 }
 
 .announcement-card p {
-  color: #555;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  margin: 0.25rem 0;
+  color: #4b5563;
 }
 
 .announcement-card small {
-  color: #888;
+  display: block;
+  margin-top: 0.5rem;
+  color: #9ca3af;
 }
 
-.tag {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 11px;
+/* ================= JOB LINK AS BUTTON ================= */
+.job-link {
+  display: inline-block;
+  margin: 0.5rem 0 0.75rem 0;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: white;
+  color: #fff;
+  background-color: #4f46e5;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
-.tag.course {
-  background: #4caf50;
+.job-link:hover {
+  background-color: #4338ca;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+  transform: translateY(-2px);
 }
 
-.tag.update {
-  background: #2196f3;
-}
-
-.tag.news {
-  background: #ff9800;
+.job-link:active {
+  background-color: #3730a3;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);
+  transform: translateY(0);
 }
