@@ -1,0 +1,60 @@
+.users-page {
+  padding: 40px;
+  background: #f9fafb;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.users-page h1 {
+  margin-bottom: 25px;
+  font-size: 26px;
+  color: #1f2937;
+}
+
+/* Table wrapper */
+.table-wrapper {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  overflow-x: auto;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f3f4f6;
+}
+
+th,
+td {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 15px;
+}
+
+th {
+  color: #374151;
+  font-weight: 600;
+}
+
+td {
+  color: #4b5563;
+}
+
+/* Row hover */
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Empty / Loading */
+.loading,
+.empty {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 15px;
+}
