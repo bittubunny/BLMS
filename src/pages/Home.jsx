@@ -288,26 +288,26 @@ const Home = () => {
           <div className="contact-item">
             <span className="contact-icon">📧</span>
             <span className="contact-info">
-              <HighlightText text="support@blms.com" highlight={searchTerm} />
+              <HighlightText text="bharathchelimalla@gmail.com" highlight={searchTerm} />
             </span>
           </div>
           <div className="contact-item">
             <span className="contact-icon">📱</span>
             <span className="contact-info">
-              <HighlightText text="+91 1234567890" highlight={searchTerm} />
+              <HighlightText text="+91 9347082247" highlight={searchTerm} />
             </span>
           </div>
           <div className="contact-item">
             <span className="contact-icon">📸</span>
             <span className="contact-info">
-              <HighlightText text="@blms_official" highlight={searchTerm} />
+              <HighlightText text="@bharath_891" highlight={searchTerm} />
             </span>
           </div>
           <div className="contact-item">
             <span className="contact-icon">📍</span>
             <span className="contact-info">
               <HighlightText
-                text="123 Learning St, Tech City, India"
+                text="Warangal, Telangana, India"
                 highlight={searchTerm}
               />
             </span>
