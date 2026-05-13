@@ -31,7 +31,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Required for Supabase SSL connection
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "connect_args": {
-        "sslmode": "require"
+        "sslmode": "prefer"
     }
 }
 
