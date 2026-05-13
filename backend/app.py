@@ -11,6 +11,12 @@ app = Flask(__name__)
 # ---------------- CORS ----------------
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
+# ---------------- ADMIN SECRET ----------------
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "admin891")
+
+def verify_admin(req):
+    return req.headers.get("x-admin-key") == ADMIN_SECRET
+
 # ---------------- DATABASE ----------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -122,6 +128,11 @@ def get_users():
 # ---------------- COURSES ----------------
 @app.route("/courses", methods=["POST"])
 def add_course():
+
+    # ADMIN PROTECTION
+    if not verify_admin(request):
+        return jsonify({"message": "Unauthorized"}), 401
+
     data = request.get_json()
 
     if not data:
@@ -184,6 +195,11 @@ def get_course(course_id):
 
 @app.route("/courses/<string:course_id>", methods=["DELETE"])
 def delete_course(course_id):
+
+    # ADMIN PROTECTION
+    if not verify_admin(request):
+        return jsonify({"message": "Unauthorized"}), 401
+
     course = Course.query.get(course_id)
 
     if not course:
@@ -301,6 +317,11 @@ def update_quiz(user_id, course_id):
 # ---------------- JOBS ----------------
 @app.route("/jobs", methods=["POST"])
 def add_job():
+
+    # ADMIN PROTECTION
+    if not verify_admin(request):
+        return jsonify({"message": "Unauthorized"}), 401
+
     data = request.get_json()
 
     if not data:
@@ -349,6 +370,11 @@ def get_jobs():
 
 @app.route("/jobs/<string:job_id>", methods=["DELETE"])
 def delete_job(job_id):
+
+    # ADMIN PROTECTION
+    if not verify_admin(request):
+        return jsonify({"message": "Unauthorized"}), 401
+
     job = Job.query.get(job_id)
 
     if not job:
