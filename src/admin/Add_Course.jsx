@@ -5,15 +5,16 @@ import "./Add_Course.css";
 const MAX_DESC_LENGTH = 200;
 const API_BASE = "https://blms-fnj5.onrender.com";
 
-// Simple admin secret
-const ADMIN_SECRET = "admin891";
-
 const AddCourse = () => {
   const navigate = useNavigate();
 
   const [auth, setAuth] = useState(false);
-  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Admin Login
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   /* ================= COURSES ================= */
   const [courses, setCourses] = useState([]);
@@ -71,33 +72,75 @@ const AddCourse = () => {
 
   /* ---------- AUTH CHECK ---------- */
   useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin");
+    const adminUser = JSON.parse(localStorage.getItem("adminUser"));
 
-    if (isAdmin === "true") {
+    if (adminUser && adminUser.isAdmin) {
       setAuth(true);
       fetchCourses();
       fetchJobs();
-    } else {
-      navigate("/");
     }
-  }, [navigate]);
+
+    setLoading(false);
+  }, []);
 
   /* ---------- ADMIN LOGIN ---------- */
-  const loginAdmin = () => {
-    if (username === "admin" && password === ADMIN_SECRET) {
-      localStorage.setItem("isAdmin", "true");
+  const loginAdmin = async () => {
+    setLoginError("");
+
+    if (!email || !password) {
+      setLoginError("Please fill all fields");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoginError(data.message || "Login failed");
+        return;
+      }
+
+      // IMPORTANT:
+      // Only this email can access admin panel
+      if (data.user.email !== "admin@gmail.com") {
+        setLoginError("You are not authorized as admin");
+        return;
+      }
+
+      localStorage.setItem(
+        "adminUser",
+        JSON.stringify({
+          isAdmin: true,
+          user: data.user,
+        })
+      );
+
       setAuth(true);
 
       fetchCourses();
       fetchJobs();
-    } else {
-      alert("Invalid admin credentials");
+
+    } catch (err) {
+      console.error(err);
+      setLoginError("Server error");
     }
   };
 
   /* ---------- LOGOUT ---------- */
   const logoutAdmin = () => {
-    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("adminUser");
+    setAuth(false);
     navigate("/");
   };
 
@@ -163,7 +206,6 @@ const AddCourse = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-key": ADMIN_SECRET,
         },
         body: JSON.stringify(course),
       });
@@ -206,9 +248,6 @@ const AddCourse = () => {
     try {
       await fetch(`${API_BASE}/courses/${id}`, {
         method: "DELETE",
-        headers: {
-          "x-admin-key": ADMIN_SECRET,
-        },
       });
 
       fetchCourses();
@@ -230,7 +269,6 @@ const AddCourse = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-key": ADMIN_SECRET,
         },
         body: JSON.stringify(job),
       });
@@ -270,9 +308,6 @@ const AddCourse = () => {
     try {
       await fetch(`${API_BASE}/jobs/${id}`, {
         method: "DELETE",
-        headers: {
-          "x-admin-key": ADMIN_SECRET,
-        },
       });
 
       fetchJobs();
@@ -282,6 +317,10 @@ const AddCourse = () => {
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   /* ---------- LOGIN SCREEN ---------- */
   if (!auth) {
     return (
@@ -289,21 +328,24 @@ const AddCourse = () => {
         <h2>Admin Login</h2>
 
         <input
-          placeholder="Username"
-          value={username}
-          onChange={(e) =>
-            setUsername(e.target.value)
-          }
+          type="email"
+          placeholder="Admin Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
+          onChange={(e) => setPassword(e.target.value)}
         />
+
+        {loginError && (
+          <p className="login-error">
+            {loginError}
+          </p>
+        )}
 
         <button onClick={loginAdmin}>
           Login
@@ -353,7 +395,6 @@ const AddCourse = () => {
         }
       />
 
-      {/* IMAGE INPUT */}
       <input
         placeholder="Course Image URL"
         value={course.image}
@@ -540,4 +581,5 @@ const AddCourse = () => {
     </div>
   );
 };
+
 export default AddCourse;
