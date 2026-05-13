@@ -1,3 +1,4 @@
+# Fixed `app.py`
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,7 +13,9 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # ---------------- ADMIN SECRET ----------------
+# Put this in Render Environment Variables too
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "admin891")
+
 
 def verify_admin(req):
     return req.headers.get("x-admin-key") == ADMIN_SECRET
@@ -23,7 +26,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set")
 
-# Fix for old postgres:// URLs
+# Fix old postgres:// URLs
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace(
         "postgres://",
@@ -34,16 +37,16 @@ if DATABASE_URL.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Required for Supabase SSL connection
+# Supabase SSL
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "connect_args": {
-        "sslmode": "prefer"
+        "sslmode": "require"
     }
 }
 
 db.init_app(app)
 
-# Create tables automatically
+# Create tables
 with app.app_context():
     db.create_all()
 
@@ -111,6 +114,22 @@ def login():
         }
     }), 200
 
+# ---------------- ADMIN LOGIN ----------------
+@app.route("/admin-login", methods=["POST"])
+def admin_login():
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if username == "admin" and password == ADMIN_SECRET:
+        return jsonify({
+            "message": "Admin login successful",
+            "admin_key": ADMIN_SECRET
+        }), 200
+
+    return jsonify({"message": "Invalid admin credentials"}), 401
+
 # ---------------- USERS ----------------
 @app.route("/users", methods=["GET"])
 def get_users():
@@ -129,7 +148,6 @@ def get_users():
 @app.route("/courses", methods=["POST"])
 def add_course():
 
-    # ADMIN PROTECTION
     if not verify_admin(request):
         return jsonify({"message": "Unauthorized"}), 401
 
@@ -175,28 +193,9 @@ def get_courses():
     ]), 200
 
 
-@app.route("/courses/<string:course_id>", methods=["GET"])
-def get_course(course_id):
-    course = Course.query.get(course_id)
-
-    if not course:
-        return jsonify({"message": "Course not found"}), 404
-
-    return jsonify({
-        "id": course.id,
-        "title": course.title,
-        "description": course.description,
-        "duration": course.duration,
-        "image": course.image,
-        "topics": json.loads(course.topics or "[]"),
-        "quiz": json.loads(course.quiz or "[]")
-    }), 200
-
-
 @app.route("/courses/<string:course_id>", methods=["DELETE"])
 def delete_course(course_id):
 
-    # ADMIN PROTECTION
     if not verify_admin(request):
         return jsonify({"message": "Unauthorized"}), 401
 
@@ -236,9 +235,6 @@ def get_progress(user_id, course_id):
 def update_topic(user_id, course_id):
     data = request.get_json()
 
-    if not data:
-        return jsonify({"message": "No data provided"}), 400
-
     topic_id = data.get("topic_id")
 
     progress = UserProgress.query.filter_by(
@@ -272,9 +268,6 @@ def update_topic(user_id, course_id):
 @app.route("/progress/<string:user_id>/<string:course_id>/quiz", methods=["POST"])
 def update_quiz(user_id, course_id):
     data = request.get_json()
-
-    if not data:
-        return jsonify({"message": "No data provided"}), 400
 
     quiz_id = data.get("quiz_id")
     score = data.get("score")
@@ -318,14 +311,10 @@ def update_quiz(user_id, course_id):
 @app.route("/jobs", methods=["POST"])
 def add_job():
 
-    # ADMIN PROTECTION
     if not verify_admin(request):
         return jsonify({"message": "Unauthorized"}), 401
 
     data = request.get_json()
-
-    if not data:
-        return jsonify({"message": "No data provided"}), 400
 
     if not all(k in data for k in ("title", "company", "link")):
         return jsonify({"message": "Missing fields"}), 400
@@ -340,16 +329,7 @@ def add_job():
     db.session.add(job)
     db.session.commit()
 
-    return jsonify({
-        "message": "Job added",
-        "job": {
-            "id": job.id,
-            "title": job.title,
-            "company": job.company,
-            "link": job.link,
-            "createdAt": job.created_at
-        }
-    }), 201
+    return jsonify({"message": "Job added"}), 201
 
 
 @app.route("/jobs", methods=["GET"])
@@ -371,7 +351,6 @@ def get_jobs():
 @app.route("/jobs/<string:job_id>", methods=["DELETE"])
 def delete_job(job_id):
 
-    # ADMIN PROTECTION
     if not verify_admin(request):
         return jsonify({"message": "Unauthorized"}), 401
 
