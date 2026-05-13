@@ -191,7 +191,26 @@ def get_courses():
         }
         for c in courses
     ]), 200
+# ---------------- GET SINGLE COURSE ----------------
+@app.route("/courses/<string:course_id>", methods=["GET"])
+def get_course(course_id):
 
+    course = Course.query.get(course_id)
+
+    if not course:
+        return jsonify({
+            "message": "Course not found"
+        }), 404
+
+    return jsonify({
+        "id": course.id,
+        "title": course.title,
+        "description": course.description,
+        "duration": course.duration,
+        "image": course.image,
+        "topics": json.loads(course.topics or "[]"),
+        "quiz": json.loads(course.quiz or "[]")
+    }), 200
 
 @app.route("/courses/<string:course_id>", methods=["DELETE"])
 def delete_course(course_id):
