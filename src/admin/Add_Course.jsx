@@ -12,7 +12,7 @@ const AddCourse = () => {
   const [loading, setLoading] = useState(true);
 
   // Admin Login
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
@@ -72,9 +72,9 @@ const AddCourse = () => {
 
   /* ---------- AUTH CHECK ---------- */
   useEffect(() => {
-    const adminUser = JSON.parse(localStorage.getItem("adminUser"));
+    const adminKey = localStorage.getItem("adminKey");
 
-    if (adminUser && adminUser.isAdmin) {
+    if (adminKey) {
       setAuth(true);
       fetchCourses();
       fetchJobs();
@@ -87,19 +87,19 @@ const AddCourse = () => {
   const loginAdmin = async () => {
     setLoginError("");
 
-    if (!email || !password) {
+    if (!username || !password) {
       setLoginError("Please fill all fields");
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/login`, {
+      const res = await fetch(`${API_BASE}/admin-login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          username,
           password,
         }),
       });
@@ -111,20 +111,7 @@ const AddCourse = () => {
         return;
       }
 
-      // IMPORTANT:
-      // Only this email can access admin panel
-      if (data.user.email !== "admin@gmail.com") {
-        setLoginError("You are not authorized as admin");
-        return;
-      }
-
-      localStorage.setItem(
-        "adminUser",
-        JSON.stringify({
-          isAdmin: true,
-          user: data.user,
-        })
-      );
+      localStorage.setItem("adminKey", data.admin_key);
 
       setAuth(true);
 
@@ -139,7 +126,7 @@ const AddCourse = () => {
 
   /* ---------- LOGOUT ---------- */
   const logoutAdmin = () => {
-    localStorage.removeItem("adminUser");
+    localStorage.removeItem("adminKey");
     setAuth(false);
     navigate("/");
   };
@@ -206,6 +193,7 @@ const AddCourse = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-admin-key": localStorage.getItem("adminKey"),
         },
         body: JSON.stringify(course),
       });
@@ -248,6 +236,9 @@ const AddCourse = () => {
     try {
       await fetch(`${API_BASE}/courses/${id}`, {
         method: "DELETE",
+        headers: {
+          "x-admin-key": localStorage.getItem("adminKey"),
+        },
       });
 
       fetchCourses();
@@ -269,6 +260,7 @@ const AddCourse = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-admin-key": localStorage.getItem("adminKey"),
         },
         body: JSON.stringify(job),
       });
@@ -308,6 +300,9 @@ const AddCourse = () => {
     try {
       await fetch(`${API_BASE}/jobs/${id}`, {
         method: "DELETE",
+        headers: {
+          "x-admin-key": localStorage.getItem("adminKey"),
+        },
       });
 
       fetchJobs();
@@ -328,10 +323,9 @@ const AddCourse = () => {
         <h2>Admin Login</h2>
 
         <input
-          type="email"
-          placeholder="Admin Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Admin Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
 
         <input
