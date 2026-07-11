@@ -1,124 +1,294 @@
+/* ==========================================================
+   DASHBOARD PAGE
+========================================================== */
+
 .dashboard {
-  padding: 60px;
-  background: #f9f9f9;
   min-height: 100vh;
-  font-family: "Segoe UI", Tahoma, sans-serif;
+  padding: 50px;
+  background: linear-gradient(180deg, #f7f9fc 0%, #eef4fb 100%);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Headings */
-.dashboard h1 {
-  font-size: 32px;
-  margin-bottom: 30px;
-  color: #333;
-}
+/* ==========================================================
+   HEADER
+========================================================== */
 
-.dashboard h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #444;
-}
-
-/* Profile Section */
-.profile-section {
-  background: #ffffff;
-  padding: 25px;
-  border-radius: 12px;
+.dashboard-header {
   margin-bottom: 40px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-.profile-section p {
-  margin: 8px 0;
-  color: #555;
+.dashboard-header h1 {
+  font-size: 36px;
+  color: #1f2937;
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
-.profile-section ul {
-  list-style-type: disc;
-  padding-left: 20px;
+.dashboard-header p {
+  color: #6b7280;
+  font-size: 16px;
 }
 
-.edit-profile-btn {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 8px 16px;
-  background: #4caf50;
-  color: white;
-  border-radius: 6px;
-  text-decoration: none;
+/* ==========================================================
+   STATISTICS
+========================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+  margin-bottom: 50px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 25px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
+  transition: .3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 30px rgba(0,0,0,.12);
+  border-color: #4fc3f7;
+}
+
+.stat-card h2 {
+  font-size: 38px;
+  color: #2563eb;
+  margin-bottom: 8px;
+}
+
+.stat-card p {
+  color: #6b7280;
+  font-size: 15px;
   font-weight: 600;
-  transition: background 0.3s ease;
 }
 
-.edit-profile-btn:hover {
-  background: #43a047;
+/* ==========================================================
+   SECTION TITLE
+========================================================== */
+
+.section-title {
+  font-size: 28px;
+  color: #1f2937;
+  margin-bottom: 25px;
 }
 
-/* Course Cards */
-.dash-card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px 25px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+/* ==========================================================
+   EMPTY STATE
+========================================================== */
+
+.empty-card {
+  background: white;
+  padding: 40px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
+}
+
+.empty-card h3 {
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.empty-card p {
+  color: #6b7280;
+}
+
+/* ==========================================================
+   COURSE CARD
+========================================================== */
+
+.learning-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 22px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: 30px;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
+
+  transition: .3s;
 }
 
-.dash-card:hover {
+.learning-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 15px 30px rgba(0,0,0,.12);
+  border-color: #4fc3f7;
 }
 
-.dash-card p {
-  margin: 4px 0;
-  color: #555;
+.learning-info {
+  flex: 1;
+}
+
+.learning-info h3 {
+  font-size: 22px;
+  color: #111827;
+  margin-bottom: 18px;
+}
+
+.learning-info p {
+  color: #4b5563;
+  margin-top: 10px;
   font-size: 15px;
 }
 
-/* Certificate Link */
-.dash-card a {
-  text-decoration: none;
-  background: #4fc3f7;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 6px;
+/* ==========================================================
+   PROGRESS BAR
+========================================================== */
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg,#4fc3f7,#2563eb);
+  transition: width .5s ease;
+}
+
+.progress-text {
+  margin-top: 8px;
+  color: #6b7280;
   font-size: 14px;
+}
+
+/* ==========================================================
+   ACTIONS
+========================================================== */
+
+.learning-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  min-width: 220px;
+}
+
+/* ==========================================================
+   BADGES
+========================================================== */
+
+.badge {
+  padding: 8px 18px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.badge.success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge.locked {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ==========================================================
+   BUTTON
+========================================================== */
+
+.action-btn {
+  width: 180px;
+  text-align: center;
+  text-decoration: none;
+
+  background: linear-gradient(135deg,#4fc3f7,#0288d1);
+
+  color: white;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
   font-weight: 600;
-  transition: background 0.3s ease;
+
+  transition: .3s;
 }
 
-.dash-card a:hover {
-  background: #39b0e0;
+.action-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg,#039be5,#0277bd);
+  box-shadow: 0 10px 20px rgba(2,136,209,.35);
 }
 
-/* Locked Certificate */
-.dash-card span {
-  color: #c62828;
-  font-weight: 600;
-}
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
 
-/* Empty State */
-.dashboard p {
-  color: #777;
-  font-size: 15px;
-}
+@media (max-width:900px){
 
-/* Responsive */
-@media (max-width: 768px) {
-  .dashboard {
-    padding: 30px 20px;
+  .dashboard{
+    padding:35px 25px;
   }
 
-  .dash-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+  .learning-card{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
   }
 
-  .dash-card a {
-    width: 100%;
-    text-align: center;
+  .learning-actions{
+
+    width:100%;
+
+    align-items:flex-start;
+
+    min-width:unset;
+
   }
+
+  .action-btn{
+
+    width:100%;
+
+  }
+
+}
+
+@media (max-width:600px){
+
+  .dashboard{
+
+    padding:20px;
+
+  }
+
+  .dashboard-header h1{
+
+    font-size:28px;
+
+  }
+
+  .section-title{
+
+    font-size:22px;
+
+  }
+
+  .stats-grid{
+
+    grid-template-columns:1fr;
+
+  }
+
 }
