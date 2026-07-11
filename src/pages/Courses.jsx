@@ -41,22 +41,37 @@ const Courses = () => {
       <div className="courses-grid">
         {courses.map((course) => (
 
+
 <div className="course-card" key={course.id}>
-  <img
-    src={course.image || "https://via.placeholder.com/300"}
-    alt={course.title}
-  />
+  <div className="course-image">
+    <img
+      src={course.image || "https://via.placeholder.com/500x300"}
+      alt={course.title}
+    />
+  </div>
 
-  <h3>{course.title}</h3>
+  <div className="course-content">
+    <h3>{course.title}</h3>
 
-  <p>{course.description}</p>
+    <p>{course.description}</p>
 
-  <span>Duration: {course.duration}</span>
+    <div className="course-footer">
+      <span>{course.duration}</span>
 
-  <button onClick={() => navigate(`/course/${course.id}`)}>
-    Start Course
-  </button>
+      <button
+        onClick={() => navigate(`/course/${course.id}`)}
+      >
+        Start Learning →
+      </button>
+    </div>
+  </div>
 </div>
+
+
+
+
+
+      
       
         ))}
       </div>
