@@ -1,106 +1,1094 @@
-.certificate {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 50px;
-  background: #f0f2f5;
-  min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
 }
 
-.certificate-content {
-  position: relative;
-  background: #fff;
-  width: 900px;
-  max-width: 95%;
-  padding: 60px 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  text-align: center;
-  border: 5px solid #1976d2;
+
+body{
+
+    background:#f5f9ff;
+
 }
 
-.certificate-content h1 {
-  font-size: 36px;
-  font-weight: 700;
-  color: #1976d2;
-  margin-bottom: 10px;
+
+/* =====================================================
+   CERTIFICATE PAGE
+===================================================== */
+
+
+.certificate-page{
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:60px 30px;
+
+
+    background:
+
+    radial-gradient(circle at top left,#dff3ff 0%,transparent 35%),
+    radial-gradient(circle at bottom right,#eef4ff 0%,transparent 40%),
+    #f7fbff;
+
+
 }
 
-.certificate-content h2 {
-  font-size: 28px;
-  font-weight: 600;
-  margin: 15px 0;
-  color: #2c3e50;
+
+
+/* =====================================================
+   CERTIFICATE CARD
+===================================================== */
+
+
+.certificate-card{
+
+
+    width:100%;
+
+    max-width:1000px;
+
+    background:white;
+
+    border-radius:30px;
+
+    padding:55px;
+
+
+    position:relative;
+
+    overflow:hidden;
+
+
+    box-shadow:
+
+    0 25px 70px rgba(37,99,235,.18);
+
+
+    border:1px solid rgba(255,255,255,.7);
+
+
+    animation:certificateAppear .8s ease;
+
+
+
 }
 
-.certificate-content h3 {
-  font-size: 24px;
-  font-weight: 500;
-  margin: 10px 0 30px;
-  color: #34495e;
+
+.certificate-card::before{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    width:250px;
+
+    height:250px;
+
+
+    background:rgba(79,195,247,.12);
+
+
+    border-radius:50%;
+
+
+    top:-120px;
+
+    right:-120px;
+
+
 }
 
-.certificate-content p {
-  font-size: 16px;
-  color: #555;
-  margin: 8px 0;
+
+
+.certificate-card::after{
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    width:220px;
+
+    height:220px;
+
+
+    background:rgba(37,99,235,.08);
+
+
+    border-radius:50%;
+
+
+    bottom:-100px;
+
+    left:-100px;
+
+
 }
 
-.certificate-content .verify {
-  font-size: 14px;
-  margin-top: 25px;
-  font-weight: 500;
-  color: #555;
+
+
+/* =====================================================
+   VERIFIED RIBBON
+===================================================== */
+
+
+.verified-ribbon{
+
+
+    position:absolute;
+
+
+    top:25px;
+
+    right:-45px;
+
+
+    width:180px;
+
+
+    padding:10px;
+
+
+    text-align:center;
+
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+
+    color:white;
+
+
+    font-weight:800;
+
+
+    transform:rotate(45deg);
+
+
+    box-shadow:0 10px 25px rgba(37,99,235,.3);
+
+
+    z-index:5;
+
+
 }
 
-.certificate-content .certificate-locked {
-  color: red;
-  font-weight: 600;
-  margin-top: 20px;
+
+
+/* =====================================================
+   WATERMARK
+===================================================== */
+
+
+.certificate-watermark{
+
+
+    position:absolute;
+
+
+    font-size:180px;
+
+
+    font-weight:900;
+
+
+    color:rgba(37,99,235,.05);
+
+
+    top:40%;
+
+    left:50%;
+
+
+    transform:
+
+    translate(-50%,-50%);
+
+
+    pointer-events:none;
+
+
 }
 
-.certificate-content .watermark {
-  position: absolute;
-  font-size: 120px;
-  color: rgba(0, 0, 0, 0.05);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-30deg);
-  pointer-events: none;
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+
+.certificate-header{
+
+
+    text-align:center;
+
+
+    position:relative;
+
+    z-index:2;
+
+
 }
 
-.certificate-content button {
-  margin-top: 30px;
-  padding: 14px 28px;
-  font-size: 16px;
-  background: #1976d2;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.25s ease;
+
+.certificate-icon{
+
+
+    width:90px;
+
+    height:90px;
+
+
+    margin:auto;
+
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    border-radius:25px;
+
+
+    font-size:45px;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+
+    color:white;
+
+
+    box-shadow:
+
+    0 15px 35px rgba(37,99,235,.35);
+
+
+    animation:float 4s infinite;
+
+
 }
 
-.certificate-content button:hover {
-  background: #1565c0;
-  transform: translateY(-2px);
+
+.certificate-header h1{
+
+
+    margin-top:25px;
+
+
+    font-size:42px;
+
+
+    color:#111827;
+
+
 }
 
-@media (max-width: 768px) {
-  .certificate-content {
-    padding: 40px 20px;
-  }
 
-  .certificate-content h1 {
-    font-size: 28px;
-  }
+.certificate-header p{
 
-  .certificate-content h2 {
-    font-size: 22px;
-  }
 
-  .certificate-content h3 {
-    font-size: 20px;
-  }
+    margin-top:15px;
+
+
+    color:#6b7280;
+
+
+    font-size:18px;
+
+
+}
+
+
+
+/* =====================================================
+   STUDENT
+===================================================== */
+
+
+.student-name{
+
+
+    text-align:center;
+
+
+    margin-top:40px;
+
+
+    font-size:48px;
+
+
+    font-weight:800;
+
+
+    color:#2563eb;
+
+
+    position:relative;
+
+    z-index:2;
+
+
+}
+
+
+
+.completion-text{
+
+
+    text-align:center;
+
+
+    margin-top:15px;
+
+
+    color:#6b7280;
+
+
+    font-size:18px;
+
+
+}
+
+
+
+.course-name{
+
+
+    margin:25px auto;
+
+
+    text-align:center;
+
+
+    font-size:30px;
+
+
+    font-weight:800;
+
+
+    color:#111827;
+
+
+    padding:15px 30px;
+
+
+    background:#eff6ff;
+
+
+    border-radius:20px;
+
+
+    width:max-content;
+
+    max-width:90%;
+
+
+}
+
+
+
+/* =====================================================
+   SCORE SECTION
+===================================================== */
+
+
+.score-section{
+
+
+    margin:45px 0;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    gap:40px;
+
+
+}
+
+
+
+.score-circle{
+
+
+    width:140px;
+
+
+    height:140px;
+
+
+    border-radius:50%;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+
+    color:white;
+
+
+    font-size:38px;
+
+
+    font-weight:800;
+
+
+    box-shadow:
+
+    0 20px 45px rgba(37,99,235,.35);
+
+
+}
+
+
+
+.score-info h3{
+
+
+    color:#2563eb;
+
+
+    font-size:26px;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.score-info p{
+
+
+    color:#6b7280;
+
+
+    font-size:18px;
+
+
+}
+
+
+
+.score-info strong{
+
+
+    color:#111827;
+
+
+}
+
+
+
+/* =====================================================
+   INFO GRID
+===================================================== */
+
+
+.certificate-info{
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:25px;
+
+
+}
+
+
+
+.info-card{
+
+
+    background:#f8fbff;
+
+
+    padding:25px;
+
+
+    border-radius:20px;
+
+
+    text-align:center;
+
+
+    box-shadow:
+
+    0 10px 25px rgba(0,0,0,.06);
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.info-card:hover{
+
+
+    transform:translateY(-5px);
+
+
+    box-shadow:
+
+    0 18px 35px rgba(37,99,235,.15);
+
+
+}
+
+
+
+.info-title{
+
+
+    display:block;
+
+
+    color:#6b7280;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.info-card strong{
+
+
+    color:#2563eb;
+
+
+}
+
+
+
+/* =====================================================
+   SIGNATURE
+===================================================== */
+
+
+.signature-section{
+
+
+    margin-top:45px;
+
+
+    display:flex;
+
+
+    justify-content:space-around;
+
+
+    align-items:center;
+
+
+}
+
+
+
+.signature{
+
+
+    text-align:center;
+
+
+}
+
+
+
+.signature-line{
+
+
+    width:160px;
+
+
+    height:2px;
+
+
+    background:#2563eb;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.signature strong{
+
+
+    color:#374151;
+
+
+}
+
+
+
+.gold-seal{
+
+
+    width:90px;
+
+    height:90px;
+
+
+    border-radius:50%;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+
+    color:white;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    font-size:30px;
+
+
+    font-weight:800;
+
+
+}
+
+
+
+.gold-seal span{
+
+
+    font-size:10px;
+
+
+}
+
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+
+.certificate-actions{
+
+
+    margin-top:45px;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    gap:20px;
+
+
+}
+
+
+
+.download-btn,
+.dashboard-btn{
+
+
+    padding:15px 30px;
+
+
+    border-radius:14px;
+
+
+    font-size:16px;
+
+
+    font-weight:700;
+
+
+    cursor:pointer;
+
+
+    transition:.35s;
+
+
+}
+
+
+
+.download-btn{
+
+
+    border:none;
+
+
+    color:white;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+
+}
+
+
+
+.dashboard-btn{
+
+
+    border:2px solid #2563eb;
+
+
+    background:white;
+
+
+    color:#2563eb;
+
+
+}
+
+
+
+.download-btn:hover,
+.dashboard-btn:hover{
+
+
+    transform:translateY(-5px);
+
+
+    box-shadow:
+
+    0 15px 35px rgba(37,99,235,.25);
+
+
+}
+
+
+
+/* =====================================================
+   LOCKED PAGE
+===================================================== */
+
+
+.certificate-locked-page{
+
+
+    min-height:100vh;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    background:
+
+    radial-gradient(circle at top left,#dff3ff,transparent),
+    #f7fbff;
+
+
+}
+
+
+
+.locked-card{
+
+
+    background:white;
+
+
+    padding:50px;
+
+
+    border-radius:30px;
+
+
+    text-align:center;
+
+
+    box-shadow:
+
+    0 25px 60px rgba(0,0,0,.1);
+
+
+}
+
+
+
+.locked-icon{
+
+
+    font-size:70px;
+
+
+}
+
+
+
+.locked-card h2{
+
+
+    margin:20px 0;
+
+
+    color:#111827;
+
+
+}
+
+
+
+.locked-card p{
+
+
+    color:#6b7280;
+
+
+    line-height:1.7;
+
+
+}
+
+
+
+.locked-card button{
+
+
+    margin-top:25px;
+
+
+    padding:14px 30px;
+
+
+    border:none;
+
+
+    border-radius:12px;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+
+    color:white;
+
+
+    font-weight:700;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+/* =====================================================
+   ANIMATIONS
+===================================================== */
+
+
+@keyframes float{
+
+
+    0%,100%{
+
+        transform:translateY(0);
+
+    }
+
+
+    50%{
+
+        transform:translateY(-12px);
+
+    }
+
+
+}
+
+
+
+@keyframes certificateAppear{
+
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(40px) scale(.95);
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0) scale(1);
+
+    }
+
+
+}
+
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+
+@media(max-width:768px){
+
+
+    .certificate-card{
+
+        padding:30px;
+
+    }
+
+
+    .certificate-header h1{
+
+        font-size:30px;
+
+    }
+
+
+    .student-name{
+
+        font-size:35px;
+
+    }
+
+
+    .course-name{
+
+        font-size:22px;
+
+    }
+
+
+    .score-section{
+
+        flex-direction:column;
+
+    }
+
+
+    .certificate-info{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .signature-section{
+
+        flex-direction:column;
+
+        gap:35px;
+
+    }
+
+
+    .certificate-actions{
+
+        flex-direction:column;
+
+    }
+
+
+    .download-btn,
+    .dashboard-btn{
+
+        width:100%;
+
+    }
+
+
 }
