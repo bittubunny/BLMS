@@ -6,91 +6,216 @@ const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
-  const [courses, setCourses] = useState([]);
-  const [progress, setProgress] = useState({});
-  const [certificates, setCertificates] = useState({});
 
-  if (!user) return <h2>Please login to view dashboard</h2>;
+  const [courses, setCourses] = useState([]);
+  const [learning, setLearning] = useState([]);
+  const [stats, setStats] = useState({
+    totalCourses: 0,
+    startedCourses: 0,
+    certificates: 0,
+    averageScore: 0,
+  });
+
+  if (!user) return <h2>Please login to view dashboard.</h2>;
 
   useEffect(() => {
-    const fetchCoursesAndProgress = async () => {
+    const fetchDashboard = async () => {
       try {
-        const res = await fetch(`${API_BASE}/courses`);
-        if (!res.ok) throw new Error("Failed to fetch courses");
-        const coursesData = await res.json();
-        setCourses(coursesData);
+        const courseRes = await fetch(`${API_BASE}/courses`);
 
-        const progressData = {};
-        const certData = {};
+        if (!courseRes.ok) throw new Error("Unable to fetch courses");
 
-        for (const course of coursesData) {
-          const progRes = await fetch(`${API_BASE}/progress/${user.id}/${course.id}`); // Now uses correct user.id
-          const prog = progRes.ok ? await progRes.json() : { completed_topics: [], quiz_results: {}, certificate_earned: false };
+        const courseList = await courseRes.json();
 
-          const quizScore = Object.values(prog.quiz_results || {})[0] || 0;
-          const totalQuestions = course.quiz?.length || 0;
-          const quizPassed = totalQuestions ? quizScore / totalQuestions >= 0.6 : false;
+        setCourses(courseList);
 
-          progressData[course.id] = {
-            completedTopics: prog.completed_topics || [],
-            quizScore,
-            totalQuestions,
-            quizPassed,
-          };
+        const progressResponses = await Promise.all(
+          courseList.map(async (course) => {
+            const res = await fetch(
+              `${API_BASE}/progress/${user.id}/${course.id}`
+            );
 
-          if (quizPassed) {
-            certData[course.id] = {
-              courseTitle: course.title,
-              verificationId: `BLMS-${course.title.replace(/\s+/g, "").substring(0, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-              issuedAt: new Date().toISOString(),
+            const prog = res.ok
+              ? await res.json()
+              : {
+                  completed_topics: [],
+                  quiz_results: {},
+                  certificate_earned: false,
+                };
+
+            const completedTopics = prog.completed_topics || [];
+
+            const quizResults = prog.quiz_results || {};
+
+            const quizScore =
+              Object.values(quizResults).length > 0
+                ? Object.values(quizResults)[0]
+                : 0;
+
+            const totalQuestions = course.quiz?.length || 0;
+
+            const progressPercent =
+              course.topics && course.topics.length
+                ? Math.round(
+                    (completedTopics.length / course.topics.length) * 100
+                  )
+                : 0;
+
+            const started =
+              completedTopics.length > 0 ||
+              Object.keys(quizResults).length > 0;
+
+            return {
+              id: course.id,
+              title: course.title,
+              totalQuestions,
+              quizScore,
+              progressPercent,
+              certificate: prog.certificate_earned,
+              started,
             };
-          }
-        }
+          })
+        );
 
-        setProgress(progressData);
-        setCertificates(certData);
+        const startedCourses = progressResponses.filter(
+          (c) => c.started
+        );
+
+        const certificates = startedCourses.filter(
+          (c) => c.certificate
+        ).length;
+
+        const averageScore =
+          startedCourses.length > 0
+            ? Math.round(
+                startedCourses.reduce((sum, c) => {
+                  if (!c.totalQuestions) return sum;
+
+                  return (
+                    sum +
+                    (c.quizScore / c.totalQuestions) * 100
+                  );
+                }, 0) / startedCourses.length
+              )
+            : 0;
+
+        setLearning(startedCourses);
+
+        setStats({
+          totalCourses: courseList.length,
+          startedCourses: startedCourses.length,
+          certificates,
+          averageScore,
+        });
       } catch (err) {
         console.error(err);
-        setProgress({});
-        setCertificates({});
       }
     };
 
-    fetchCoursesAndProgress();
-  }, [user?.id]);
-
-  const getCourseTitle = (id) => {
-    const course = courses.find((c) => c.id === id);
-    return course ? course.title : `Course ${id}`;
-  };
+    fetchDashboard();
+  }, [user.id]);
 
   return (
     <div className="dashboard">
-      <h1>Welcome, {user.name}</h1>
 
-      <h2>Completed Courses</h2>
-      {courses.length === 0 ? (
-        <p>Loading courses...</p>
-      ) : Object.keys(progress).length === 0 ? (
-        <p>No courses completed yet</p>
+      <div className="dashboard-header">
+        <h1>Welcome back, {user.name} 👋</h1>
+        <p>Track your learning progress and certificates.</p>
+      </div>
+
+      <div className="stats-grid">
+
+        <div className="stat-card">
+          <h2>{stats.totalCourses}</h2>
+          <p>Total Courses</p>
+        </div>
+
+        <div className="stat-card">
+          <h2>{stats.startedCourses}</h2>
+          <p>Started</p>
+        </div>
+
+        <div className="stat-card">
+          <h2>{stats.certificates}</h2>
+          <p>Certificates</p>
+        </div>
+
+        <div className="stat-card">
+          <h2>{stats.averageScore}%</h2>
+          <p>Average Score</p>
+        </div>
+
+      </div>
+
+      <h2 className="section-title">My Learning</h2>
+
+      {learning.length === 0 ? (
+        <div className="empty-card">
+          <h3>No learning activity yet.</h3>
+          <p>Start a course to see your progress here.</p>
+        </div>
       ) : (
-        Object.entries(progress).map(([cid, data]) => (
-          <div key={cid} className="dash-card">
-            <div>
-              <p>
-                Course: <strong>{getCourseTitle(cid)}</strong>
+        learning.map((course) => (
+          <div className="learning-card" key={course.id}>
+
+            <div className="learning-info">
+
+              <h3>{course.title}</h3>
+
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{
+                    width: `${course.progressPercent}%`,
+                  }}
+                />
+              </div>
+
+              <p className="progress-text">
+                Progress: {course.progressPercent}%
               </p>
+
               <p>
-                Score: {data.quizScore} / {data.totalQuestions}
+                Quiz Score:{" "}
+                <strong>
+                  {course.quizScore} / {course.totalQuestions}
+                </strong>
               </p>
+
             </div>
-            <div>
-              {certificates[cid] ? (
-                <Link to={`/certificate/${cid}`}>View Certificate</Link>
+
+            <div className="learning-actions">
+
+              {course.certificate ? (
+                <>
+                  <span className="badge success">
+                    Certificate Earned
+                  </span>
+
+                  <Link
+                    className="action-btn"
+                    to={`/certificate/${course.id}`}
+                  >
+                    View Certificate
+                  </Link>
+                </>
               ) : (
-                <span>Certificate Locked</span>
+                <>
+                  <span className="badge locked">
+                    Certificate Locked
+                  </span>
+
+                  <Link
+                    className="action-btn"
+                    to={`/course/${course.id}`}
+                  >
+                    Continue Learning
+                  </Link>
+                </>
               )}
+
             </div>
+
           </div>
         ))
       )}
