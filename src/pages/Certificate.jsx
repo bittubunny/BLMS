@@ -6,7 +6,7 @@ import "./Certificate.css";
 const API_BASE = "https://blms-fnj5.onrender.com";
 
 const Certificate = () => {
-  const { id } = useParams(); // course ID
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
@@ -16,157 +16,493 @@ const Certificate = () => {
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
+
     if (!storedUser) {
-      navigate("/"); // Redirect to login
+      navigate("/");
       return;
     }
+
     setUser(storedUser);
 
     const fetchCertificateData = async () => {
       try {
-        // 1. Fetch course
+        // Fetch Course
         const courseRes = await fetch(`${API_BASE}/courses/${id}`);
-        if (!courseRes.ok) throw new Error("Course not found");
+
+        if (!courseRes.ok)
+          throw new Error("Course not found");
+
         const courseData = await courseRes.json();
+
         setCourse(courseData);
 
-        // 2. Fetch USER-SPECIFIC progress (now uses correct user.id)
+        // Fetch Progress
         const progressRes = await fetch(
           `${API_BASE}/progress/${storedUser.id}/${id}`
         );
-        if (!progressRes.ok) throw new Error("Progress not found");
+
+        if (!progressRes.ok)
+          throw new Error("Progress not found");
+
         const progressData = await progressRes.json();
 
-        const finalScore = progressData.quiz_results?.final ?? null;
-        const totalQuestions = courseData.quiz?.length || 0;
+        const finalScore =
+          progressData.quiz_results?.final ?? null;
 
-        if (finalScore === null || totalQuestions === 0) {
+        const totalQuestions =
+          courseData.quiz?.length || 0;
+
+        if (
+          finalScore === null ||
+          totalQuestions === 0
+        ) {
           setPassed(false);
           return;
         }
 
-        const isPassed = finalScore / totalQuestions >= 0.6;
+        const isPassed =
+          finalScore / totalQuestions >= 0.6;
 
         setScore(finalScore);
         setPassed(isPassed);
+
       } catch (err) {
-        console.error("Certificate fetch error:", err);
+        console.error(err);
       }
     };
 
     fetchCertificateData();
+
   }, [id, navigate]);
+
+  const verificationId = user && course
+    ? `BLMS-${user.id.substring(0, 8).toUpperCase()}-${course.id
+        .substring(0, 8)
+        .toUpperCase()}`
+    : "";
+
+  const issueDate = new Date().toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
+
+  const percentage =
+    course?.quiz?.length
+      ? Math.round((score / course.quiz.length) * 100)
+      : 0;
+
+  /* =====================================================
+     PDF DOWNLOAD
+  ===================================================== */
 
   const download = () => {
     if (!passed || !user || !course) return;
 
-    const verificationId = `BLMS-${user.id}-${course.id}`;
+    const pdf = new jsPDF(
+      "landscape",
+      "mm",
+      "a4"
+    );
 
-    const pdf = new jsPDF("landscape", "mm", "a4");
-    const w = pdf.internal.pageSize.getWidth();
-    const h = pdf.internal.pageSize.getHeight();
+    const width =
+      pdf.internal.pageSize.getWidth();
 
-    // Background
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, w, h, "F");
+    const height =
+      pdf.internal.pageSize.getHeight();
 
-    // Watermark
-    pdf.setTextColor(220);
-    pdf.setFontSize(80);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("BLMS", w / 2, h / 2, {
-      align: "center",
-      angle: 30,
-    });
+    /* Background */
 
-    // Border
-    pdf.setDrawColor(25, 118, 210);
+    pdf.setFillColor(250, 252, 255);
+
+    pdf.rect(0, 0, width, height, "F");
+
+    /* Border */
+
+    pdf.setDrawColor(37, 99, 235);
     pdf.setLineWidth(2);
-    pdf.roundedRect(10, 10, w - 20, h - 20, 15, 15, "S");
 
-    // Title
-    pdf.setTextColor("#1976d2");
-    pdf.setFontSize(32);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Certificate of Completion", w / 2, 40, { align: "center" });
-
-    pdf.setFontSize(16);
-    pdf.setTextColor("#333");
-    pdf.setFont("helvetica", "normal");
-    pdf.text("This certifies that", w / 2, 65, { align: "center" });
-
-    pdf.setFontSize(26);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(user.name, w / 2, 85, { align: "center" });
-
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(
-      "has successfully completed the course",
-      w / 2,
-      105,
-      { align: "center" }
+    pdf.roundedRect(
+      10,
+      10,
+      width - 20,
+      height - 20,
+      8,
+      8
     );
 
-    pdf.setFontSize(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(course.title, w / 2, 125, { align: "center" });
+    /* Watermark */
 
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(`Verification ID: ${verificationId}`, 20, h - 30);
+    pdf.setFontSize(70);
+    pdf.setTextColor(235);
+
     pdf.text(
-      `Issued On: ${new Date().toDateString()}`,
-      20,
-      h - 20
+      "BLMS",
+      width / 2,
+      height / 2,
+      {
+        align: "center",
+        angle: 25,
+      }
     );
+
+    /* Title */
+
+    pdf.setFontSize(30);
+    pdf.setTextColor(37, 99, 235);
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text(
+      "Certificate of Completion",
+      width / 2,
+      35,
+      {
+        align: "center",
+      }
+    );
+
+    /* Subtitle */
+
+    pdf.setFontSize(16);
+    pdf.setTextColor(80);
+
+    pdf.text(
+      "This certificate is proudly presented to",
+      width / 2,
+      55,
+      {
+        align: "center",
+      }
+    );
+
+    /* Name */
+
+    pdf.setFontSize(28);
+    pdf.setTextColor(20);
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text(
+      user.name,
+      width / 2,
+      78,
+      {
+        align: "center",
+      }
+    );
+
+    /* Description */
+
+    pdf.setFontSize(16);
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(
+      "For successfully completing the course",
+      width / 2,
+      96,
+      {
+        align: "center",
+      }
+    );
+
+    pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text(
+      course.title,
+      width / 2,
+      114,
+      {
+        align: "center",
+      }
+    );
+
+    /* Footer */
 
     pdf.setFontSize(12);
-    pdf.text("Powered by BLMS", w / 2, h - 15, { align: "center" });
 
-    pdf.save(`Certificate-${course.title}.pdf`);
+    pdf.setTextColor(80);
+
+    pdf.text(
+      `Score : ${score}/${course.quiz.length} (${percentage}%)`,
+      20,
+      height - 32
+    );
+
+    pdf.text(
+      `Verification ID : ${verificationId}`,
+      20,
+      height - 22
+    );
+
+    pdf.text(
+      `Issued : ${issueDate}`,
+      width - 70,
+      height - 22
+    );
+
+    pdf.text(
+      "BLMS Learning Management System",
+      width / 2,
+      height - 12,
+      {
+        align: "center",
+      }
+    );
+
+    pdf.save(
+      `${course.title}-Certificate.pdf`
+    );
   };
+
+  /* =====================================================
+     STATES
+  ===================================================== */
 
   if (!user)
     return <h2 style={{ padding: "40px" }}>Please login</h2>;
 
   if (!course)
-    return <h2 style={{ padding: "40px" }}>Loading certificate...</h2>;
-
-  if (!passed)
     return (
       <h2 style={{ padding: "40px" }}>
-        Certificate Locked — score at least 60% to unlock
+        Loading certificate...
       </h2>
     );
 
-  return (
-    <div className="certificate">
-      <div className="certificate-content">
-        <span className="watermark">BLMS</span>
+  if (!passed)
+    return (
+      <div className="certificate-locked-page">
 
-        <h1>Certificate of Completion</h1>
-        <p>This certifies that</p>
-        <h2>{user.name}</h2>
-        <p>has successfully completed</p>
-        <h3>{course.title}</h3>
+        <div className="locked-card">
 
-        <p className="verify">
-          Verification ID:{" "}
-          <strong>{`BLMS-${user.id}-${course.id}`}</strong>
-        </p>
+          <div className="locked-icon">🔒</div>
 
-        <p>
-          Score: <strong>{score}</strong> / {course.quiz.length}
-        </p>
+          <h2>Certificate Locked</h2>
 
-        <button onClick={download}>Download PDF</button>
-        <button onClick={() => navigate("/dashboard")}>
-          Back to Dashboard
-        </button>
+          <p>
+            Score at least <strong>60%</strong> in the
+            final assessment to unlock your
+            certificate.
+          </p>
+
+          <button
+            onClick={() =>
+              navigate(`/quiz/${course.id}`)
+            }
+          >
+            Retake Quiz
+          </button>
+
+        </div>
+
       </div>
+    );
+
+
+
+
+  return (
+    <div className="certificate-page">
+
+      <div className="certificate-card">
+
+        {/* ===================== VERIFIED RIBBON ===================== */}
+
+        <div className="verified-ribbon">
+          ★ VERIFIED
+        </div>
+
+        {/* ===================== WATERMARK ===================== */}
+
+        <div className="certificate-watermark">
+          BLMS
+        </div>
+
+        {/* ===================== HEADER ===================== */}
+
+        <div className="certificate-header">
+
+          <div className="certificate-icon">
+            🏆
+          </div>
+
+          <h1>Certificate of Achievement</h1>
+
+          <p>
+            This certificate is proudly presented to
+          </p>
+
+        </div>
+
+        {/* ===================== STUDENT ===================== */}
+
+        <div className="student-name">
+
+          {user.name}
+
+        </div>
+
+        <p className="completion-text">
+
+          for successfully completing the course
+
+        </p>
+
+        <div className="course-name">
+
+          {course.title}
+
+        </div>
+
+        {/* ===================== SCORE ===================== */}
+
+        <div className="score-section">
+
+          <div className="score-circle">
+
+            <span>{percentage}%</span>
+
+          </div>
+
+          <div className="score-info">
+
+            <h3>Excellent Performance</h3>
+
+            <p>
+
+              Final Score
+
+              <strong>
+                {" "}
+                {score} / {course.quiz.length}
+              </strong>
+
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* ===================== INFO GRID ===================== */}
+
+        <div className="certificate-info">
+
+          <div className="info-card">
+
+            <span className="info-title">
+
+              Verification ID
+
+            </span>
+
+            <strong>
+
+              {verificationId}
+
+            </strong>
+
+          </div>
+
+          <div className="info-card">
+
+            <span className="info-title">
+
+              Issued On
+
+            </span>
+
+            <strong>
+
+              {issueDate}
+
+            </strong>
+
+          </div>
+
+        </div>
+
+        {/* ===================== SIGNATURES ===================== */}
+
+        <div className="signature-section">
+
+          <div className="signature">
+
+            <div className="signature-line"></div>
+
+            <strong>Instructor</strong>
+
+          </div>
+
+          <div className="gold-seal">
+
+            ★
+
+            <span>
+
+              CERTIFIED
+
+            </span>
+
+          </div>
+
+          <div className="signature">
+
+            <div className="signature-line"></div>
+
+            <strong>BLMS</strong>
+
+          </div>
+
+        </div>
+
+        {/* ===================== BUTTONS ===================== */}
+
+        <div className="certificate-actions">
+
+          <button
+            className="download-btn"
+            onClick={download}
+          >
+
+            ⬇ Download Certificate
+
+          </button>
+
+          <button
+            className="dashboard-btn"
+            onClick={() =>
+              navigate("/dashboard")
+            }
+          >
+
+            🏠 Dashboard
+
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
   );
+
 };
 
 export default Certificate;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
