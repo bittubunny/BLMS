@@ -13,9 +13,6 @@ const CoursePlayer = () => {
   const [user, setUser] = useState(null);
   const [quizDone, setQuizDone] = useState(false);
 
-  // NEW
-  const [showAchievement, setShowAchievement] = useState(false);
-
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
 
@@ -50,16 +47,6 @@ const CoursePlayer = () => {
         setQuizDone(
           Object.keys(progressData.quiz_results || {}).length > 0
         );
-
-        if (
-          selectedCourse.topics &&
-          progressData.completed_topics &&
-          progressData.completed_topics.length ===
-            selectedCourse.topics.length
-        ) {
-          setShowAchievement(true);
-        }
-
       } catch (err) {
         console.error(err);
         setCourse(null);
@@ -91,17 +78,8 @@ const CoursePlayer = () => {
           }),
         }
       );
-
-      if (updated.length === course.topics.length) {
-        setTimeout(() => {
-          setShowAchievement(true);
-        }, 600);
-      } else {
-        setShowAchievement(false);
-      }
-
     } catch (err) {
-      console.error("Failed to update topic progress:", err);
+      console.error(err);
     }
   };
 
@@ -112,14 +90,14 @@ const CoursePlayer = () => {
   if (!user)
     return (
       <h2 style={{ padding: "40px" }}>
-        Please login to access this course
+        Please login to access this course.
       </h2>
     );
 
   if (!course)
     return (
       <h2 style={{ padding: "40px" }}>
-        Loading course...
+        Loading Course...
       </h2>
     );
 
@@ -127,102 +105,163 @@ const CoursePlayer = () => {
     ? (completed.length / course.topics.length) * 100
     : 0;
 
+  const allCompleted =
+    completed.length === course.topics.length;
+
   return (
     <div className="course-player">
 
-      <h1>{course.title}</h1>
+      {/* ================= HERO ================= */}
 
-      <div className="progress-bar">
-        <div
-          className="progress-fill"
-          style={{
-            width: `${progress}%`,
-          }}
-        />
-      </div>
+      <section className="player-header">
 
-      <p
-        style={{
-          textAlign: "right",
-          fontWeight: "600",
-          color: "#2563eb",
-          marginBottom: "25px",
-        }}
-      >
-        {Math.round(progress)}% Completed
-      </p>
+        <span className="hero-badge">
+          📘 Learning Journey
+        </span>
 
-      {course.topics.map((topic, index) => (
-        <details
-          key={index}
-          className="topic"
-        >
-          <summary>
-            {topic.title}
-            {completed.includes(index) && " ✅"}
-          </summary>
+        <h1>{course.title}</h1>
 
-          <p>{topic.content}</p>
+        <p>
+          Complete every lesson to unlock the final quiz and
+          earn your BLMS certificate.
+        </p>
 
-          <button
-            onClick={() => toggleComplete(index)}
-          >
-            {completed.includes(index)
-              ? "Mark Incomplete"
-              : "Mark as Complete"}
-          </button>
+      </section>
 
-        </details>
-      ))}
-      {showAchievement && (
-        <div className="achievement-card">
+      {/* ================= PROGRESS ================= */}
 
-          <div className="achievement-overlay"></div>
+      <section className="progress-card">
 
-          <div className="achievement-content">
+        <div className="progress-top">
 
-            <div className="trophy">
-              🏆
-            </div>
+          <h3>Your Progress</h3>
 
-            <h2>Outstanding Work!</h2>
-
-            <p>
-              You've successfully completed every lesson in this course.
-            </p>
-
-            <p className="quote">
-              "Success is built one lesson at a time. Your dedication has
-              brought you this far, and now it's time to prove what you've
-              learned."
-            </p>
-
-            <h3>
-              🎉 You are now eligible to take the Final Quiz!
-            </h3>
-
-            <div className="stars">
-              ⭐ ⭐ ⭐ ⭐ ⭐
-            </div>
-
-          </div>
+          <span>
+            {completed.length} / {course.topics.length} Lessons
+          </span>
 
         </div>
+
+        <div className="progress-bar">
+
+          <div
+            className="progress-fill"
+            style={{ width: `${progress}%` }}
+          />
+
+        </div>
+
+        <div className="progress-percent">
+
+          {Math.round(progress)}% Completed
+
+        </div>
+
+      </section>
+
+      {/* ================= TOPICS ================= */}
+
+      <section className="topics-section">
+
+        {course.topics.map((topic, index) => (
+
+          <details
+            key={index}
+            className={`topic-card ${
+              completed.includes(index)
+                ? "completed"
+                : ""
+            }`}
+          >
+
+            <summary>
+
+              <div className="topic-title">
+
+                <span className="topic-icon">
+                  📖
+                </span>
+
+                {topic.title}
+
+              </div>
+
+              {completed.includes(index) && (
+                <span className="completed-badge">
+                  ✅
+                </span>
+              )}
+
+            </summary>
+
+            <div className="topic-content">
+
+              <p>{topic.content}</p>
+
+              <button
+                onClick={() =>
+                  toggleComplete(index)
+                }
+              >
+                {completed.includes(index)
+                  ? "✓ Mark Incomplete"
+                  : "✓ Mark as Complete"}
+              </button>
+
+            </div>
+
+          </details>
+
+        ))}
+
+      </section>
+
+      {/* ================= ACHIEVEMENT ================= */}
+
+      {allCompleted && (
+
+        <div className="achievement-banner">
+
+          <div className="achievement-icon">
+            🏆
+          </div>
+
+          <h2>
+            Outstanding Work!
+          </h2>
+
+          <p>
+            You've completed every lesson in this course.
+            You're now eligible to take the final quiz and
+            earn your certificate.
+          </p>
+
+          <button
+            className="quiz-btn"
+            onClick={handleQuizClick}
+          >
+            {quizDone
+              ? "Retake Quiz"
+              : "🚀 Start Final Quiz"}
+          </button>
+
+        </div>
+
       )}
 
-      <button
-        className="quiz-btn"
-        disabled={completed.length !== course.topics.length}
-        onClick={handleQuizClick}
-      >
-        {quizDone ? "Retake Quiz" : "Start Final Quiz"}
-      </button>
+      {!allCompleted && (
+
+        <button
+          className="quiz-btn locked"
+          disabled
+        >
+          Complete all lessons to unlock the quiz
+        </button>
+
+      )}
 
     </div>
   );
 };
 
 export default CoursePlayer;
-
-
-      
