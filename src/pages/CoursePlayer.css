@@ -1,456 +1,414 @@
-/* ==========================================================
-   COURSE PLAYER
-========================================================== */
+/* =====================================================
+   PAGE
+===================================================== */
 
 .course-player {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 35px;
-  background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.6s ease;
+    min-height: 100vh;
+    padding: 60px;
+
+    background:
+        radial-gradient(circle at top left, #dff3ff 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #eef4ff 0%, transparent 40%),
+        #f7fbff;
+
+    color: #1f2937;
 }
 
-.course-player h1 {
-  font-size: 34px;
-  color: #1f2937;
-  margin-bottom: 10px;
+/* =====================================================
+   HERO
+===================================================== */
+
+.player-header {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto 50px;
 }
 
-/* ==========================================================
-   PROGRESS BAR
-========================================================== */
+.hero-badge {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 50px;
+    background: #dbeafe;
+    color: #2563eb;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.player-header h1 {
+    font-size: 46px;
+    color: #111827;
+    margin-bottom: 15px;
+}
+
+.player-header p {
+    font-size: 18px;
+    color: #6b7280;
+    line-height: 1.7;
+}
+
+/* =====================================================
+   PROGRESS CARD
+===================================================== */
+
+.progress-card {
+    max-width: 900px;
+    margin: auto;
+    margin-bottom: 45px;
+
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(12px);
+
+    border-radius: 24px;
+
+    padding: 30px;
+
+    box-shadow: 0 15px 35px rgba(0,0,0,.08);
+}
+
+.progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.progress-top h3 {
+    font-size: 24px;
+    color: #111827;
+}
+
+.progress-top span {
+    color: #2563eb;
+    font-weight: 700;
+}
 
 .progress-bar {
-  width: 100%;
-  height: 12px;
-  background: #e5e7eb;
-  border-radius: 100px;
-  overflow: hidden;
-  margin: 20px 0;
+    height: 14px;
+    background: #e5e7eb;
+    border-radius: 50px;
+    overflow: hidden;
 }
 
 .progress-fill {
-  height: 100%;
-  border-radius: 100px;
-  background: linear-gradient(90deg, #4fc3f7, #2563eb);
-  transition: width .6s ease;
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg,#2563eb,#4fc3f7);
+    transition: width .6s ease;
 }
 
-/* ==========================================================
+.progress-percent {
+    text-align: right;
+    margin-top: 12px;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+/* =====================================================
    TOPICS
-========================================================== */
+===================================================== */
 
-.topic {
-  margin-bottom: 18px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  background: white;
-  transition: .3s;
+.topics-section {
+    max-width: 900px;
+    margin: auto;
 }
 
-.topic:hover {
-  border-color: #4fc3f7;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0,0,0,.08);
+.topic-card {
+    background: white;
+    margin-bottom: 22px;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    border: 2px solid transparent;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+
+    transition: .35s;
 }
 
-.topic summary {
-  cursor: pointer;
-  padding: 18px 20px;
-  list-style: none;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2937;
-  position: relative;
+.topic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 35px rgba(37,99,235,.15);
 }
 
-.topic summary::-webkit-details-marker {
-  display: none;
+.topic-card.completed {
+    border-color: #4fc3f7;
+    background: linear-gradient(135deg,#ffffff,#eef8ff);
 }
 
-.topic summary::after {
-  content: "▼";
-  position: absolute;
-  right: 20px;
-  color: #2563eb;
-  transition: .3s;
+.topic-card summary {
+    cursor: pointer;
+    list-style: none;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 22px 25px;
+
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.topic[open] summary::after {
-  transform: rotate(180deg);
+.topic-card summary::-webkit-details-marker {
+    display: none;
 }
 
-.topic p {
-  padding: 0 20px;
-  margin-bottom: 18px;
-  line-height: 1.8;
-  color: #4b5563;
+.topic-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.topic button {
-  margin: 0 20px 20px;
-  padding: 11px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-
-  background: linear-gradient(135deg,#4fc3f7,#0288d1);
-
-  color: white;
-
-  font-weight: 600;
-
-  transition: .3s;
+.topic-icon {
+    font-size: 22px;
 }
 
-.topic button:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg,#039be5,#0277bd);
-  box-shadow: 0 10px 20px rgba(2,136,209,.35);
+.completed-badge {
+    font-size: 22px;
 }
 
-/* ==========================================================
-   ACHIEVEMENT CARD
-========================================================== */
-
-.achievement-card {
-
-  position: relative;
-
-  overflow: hidden;
-
-  margin: 35px 0;
-
-  border-radius: 18px;
-
-  min-height: 280px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  text-align: center;
-
-  color: white;
-
-  animation: achievementEnter .8s ease;
-
-  box-shadow: 0 15px 35px rgba(0,0,0,.18);
-
-  background-image:
-      url("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80");
-
-  background-size: cover;
-
-  background-position: center;
-
+.topic-content {
+    padding: 0 25px 25px;
 }
 
-.achievement-overlay {
-
-  position: absolute;
-
-  inset: 0;
-
-  background: rgba(15,23,42,.72);
-
-  backdrop-filter: blur(3px);
-
+.topic-content p {
+    color: #4b5563;
+    line-height: 1.8;
+    margin-bottom: 20px;
 }
 
-.achievement-content {
+.topic-content button {
+    padding: 12px 22px;
 
-  position: relative;
+    border: none;
 
-  z-index: 2;
+    border-radius: 10px;
 
-  padding: 40px;
+    background: linear-gradient(135deg,#2563eb,#4fc3f7);
 
+    color: white;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .3s;
 }
 
-.trophy {
-
-  font-size: 70px;
-
-  animation: trophyBounce 2s infinite;
-
+.topic-content button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(37,99,235,.25);
 }
 
-.achievement-content h2 {
+/* =====================================================
+   ACHIEVEMENT
+===================================================== */
 
-  margin-top: 10px;
+.achievement-banner {
 
-  font-size: 36px;
+    max-width: 900px;
 
-  color: #FFD54F;
+    margin: 50px auto 0;
 
+    padding: 45px;
+
+    border-radius: 28px;
+
+    text-align: center;
+
+    color: white;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #4fc3f7
+    );
+
+    box-shadow: 0 20px 45px rgba(37,99,235,.30);
+
+    animation: bannerGlow 3s infinite alternate;
 }
 
-.achievement-content p {
+.achievement-icon {
 
-  margin-top: 18px;
+    font-size: 72px;
 
-  line-height: 1.8;
-
-  font-size: 17px;
-
+    animation: trophyFloat 2.5s infinite ease-in-out;
 }
 
-.quote {
+.achievement-banner h2 {
 
-  font-style: italic;
+    margin-top: 15px;
 
-  opacity: .95;
+    margin-bottom: 15px;
 
+    font-size: 34px;
 }
 
-.achievement-content h3 {
+.achievement-banner p {
 
-  margin-top: 25px;
+    max-width: 700px;
 
-  font-size: 24px;
+    margin: auto;
 
-  color: #90EE90;
+    line-height: 1.8;
 
+    opacity: .95;
+
+    margin-bottom: 30px;
 }
 
-.stars {
-
-  margin-top: 25px;
-
-  font-size: 30px;
-
-  animation: starsGlow 2s infinite;
-
-}
-
-/* ==========================================================
+/* =====================================================
    QUIZ BUTTON
-========================================================== */
+===================================================== */
 
 .quiz-btn {
 
-  width: 100%;
+    width: 100%;
 
-  padding: 16px;
+    max-width: 380px;
 
-  border: none;
+    padding: 16px;
 
-  border-radius: 10px;
+    border: none;
 
-  cursor: pointer;
+    border-radius: 12px;
 
-  font-size: 17px;
+    font-size: 17px;
 
-  font-weight: 700;
+    font-weight: 700;
 
-  color: white;
+    color: white;
 
-  background: linear-gradient(135deg,#00c853,#009624);
+    background: linear-gradient(
+        135deg,
+        #16a34a,
+        #22c55e
+    );
 
-  transition: .3s;
+    cursor: pointer;
 
+    transition: .35s;
 }
 
-.quiz-btn:not(:disabled){
+.quiz-btn:hover {
 
-  animation:pulse 2s infinite;
+    transform: translateY(-3px);
 
+    box-shadow: 0 18px 35px rgba(34,197,94,.35);
 }
 
-.quiz-btn:hover:not(:disabled){
+.quiz-btn.locked {
 
-  transform:translateY(-2px);
+    display: block;
 
-  box-shadow:0 10px 25px rgba(0,200,83,.4);
+    margin: 40px auto;
 
+    max-width: 500px;
+
+    background: #cbd5e1;
+
+    color: #475569;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
 }
 
-.quiz-btn:disabled{
-
-  background:#cbd5e1;
-
-  color:#64748b;
-
-  cursor:not-allowed;
-
-}
-
-/* ==========================================================
+/* =====================================================
    ANIMATIONS
-========================================================== */
+===================================================== */
 
-@keyframes fadeIn{
+@keyframes trophyFloat {
 
-  from{
+    0%,100% {
+        transform: translateY(0);
+    }
 
-    opacity:0;
-
-    transform:translateY(20px);
-
-  }
-
-  to{
-
-    opacity:1;
-
-    transform:translateY(0);
-
-  }
+    50% {
+        transform: translateY(-12px);
+    }
 
 }
 
-@keyframes achievementEnter{
+@keyframes bannerGlow {
 
-  from{
+    from {
 
-    opacity:0;
+        box-shadow:
+        0 20px 45px rgba(37,99,235,.25);
 
-    transform:translateY(60px) scale(.92);
+    }
 
-  }
+    to {
 
-  to{
+        box-shadow:
+        0 25px 60px rgba(79,195,247,.45);
 
-    opacity:1;
-
-    transform:translateY(0) scale(1);
-
-  }
+    }
 
 }
 
-@keyframes trophyBounce{
+/* =====================================================
+   RESPONSIVE
+===================================================== */
 
-  0%,100%{
+@media (max-width:768px){
 
-    transform:translateY(0);
+.course-player{
 
-  }
-
-  50%{
-
-    transform:translateY(-12px);
-
-  }
+padding:30px 20px;
 
 }
 
-@keyframes pulse{
+.player-header h1{
 
-  0%{
-
-    box-shadow:0 0 0 rgba(0,200,83,0);
-
-  }
-
-  50%{
-
-    box-shadow:0 0 20px rgba(0,200,83,.5);
-
-  }
-
-  100%{
-
-    box-shadow:0 0 0 rgba(0,200,83,0);
-
-  }
+font-size:34px;
 
 }
 
-@keyframes starsGlow{
+.progress-top{
 
-  0%{
+flex-direction:column;
 
-    transform:scale(1);
+gap:10px;
 
-    opacity:.8;
-
-  }
-
-  50%{
-
-    transform:scale(1.1);
-
-    opacity:1;
-
-  }
-
-  100%{
-
-    transform:scale(1);
-
-    opacity:.8;
-
-  }
+align-items:flex-start;
 
 }
 
-/* ==========================================================
-   MOBILE
-========================================================== */
+.topic-card summary{
 
-@media(max-width:768px){
+font-size:16px;
 
-  .course-player{
+padding:18px;
 
-    margin:20px;
+}
 
-    padding:20px;
+.topic-content{
 
-  }
+padding:0 18px 20px;
 
-  .course-player h1{
+}
 
-    font-size:28px;
+.achievement-banner{
 
-  }
+padding:30px 20px;
 
-  .topic summary{
+}
 
-    font-size:16px;
+.achievement-banner h2{
 
-  }
+font-size:28px;
 
-  .topic p{
+}
 
-    font-size:14px;
+.quiz-btn{
 
-  }
+max-width:100%;
 
-  .topic button{
-
-    width:calc(100% - 40px);
-
-  }
-
-  .achievement-content{
-
-    padding:25px;
-
-  }
-
-  .achievement-content h2{
-
-    font-size:28px;
-
-  }
-
-  .achievement-content h3{
-
-    font-size:20px;
-
-  }
-
-  .stars{
-
-    font-size:24px;
-
-  }
+}
 
 }
