@@ -278,7 +278,7 @@
     display:grid;
 
     grid-template-columns:repeat(auto-fill,minmax(320px,360px));
-   justify-content:center;
+    justify-content:center;
 
     gap:35px;
 
@@ -289,8 +289,8 @@
 ===================================================== */
 
 .course-card{
-   max-width:360px;
-   width:100%;
+      max-width:360px;
+      width:100%;
       margin:auto;
 
     background:white;
