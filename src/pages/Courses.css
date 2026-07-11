@@ -15,95 +15,95 @@
 /* ===== GRID ===== */
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
 }
 
-/* ===== COURSE CARD ===== */
+/* ===== CARD ===== */
 .course-card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
 
   display: flex;
   flex-direction: column;
 
-  /* 🔒 LOCKED SIZE */
-  height: 420px;
-  min-height: 420px;
-  max-height: 420px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+
+  height: 100%;
 }
 
 .course-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
 /* ===== IMAGE ===== */
 .course-card img {
   width: 100%;
-  height: 150px;
-  object-fit: contain;
-  margin-bottom: 12px;
-  flex-shrink: 0;
+  height: 180px;
+  object-fit: cover;
+  background: #f3f4f6;
 }
 
-/* ===== TITLE ===== */
+/* ===== CONTENT ===== */
 .course-card h3 {
+  padding: 16px 16px 8px;
+  margin: 0;
+
   font-size: 18px;
-  margin-bottom: 8px;
   color: #111827;
-  flex-shrink: 0;
+
+  min-height: 52px;
 }
 
-/* ===== DESCRIPTION (SCROLLABLE) ===== */
 .course-card p {
+  padding: 0 16px;
+
+  color: #6b7280;
   font-size: 14px;
-  color: #555;
-  line-height: 1.5;
+  line-height: 1.6;
 
-  flex-grow: 1;
-  overflow-y: auto;
-  padding-right: 6px;
-  margin-bottom: 10px;
-}
+  /* show only 4 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
 
-/* Scrollbar (clean) */
-.course-card p::-webkit-scrollbar {
-  width: 4px;
-}
-.course-card p::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  min-height: 90px;
 }
 
 /* ===== DURATION ===== */
 .course-card span {
+  padding: 0 16px;
+  margin-top: auto;
+
   font-weight: 600;
   color: #374151;
-  margin-bottom: 12px;
-  flex-shrink: 0;
 }
 
 /* ===== BUTTON ===== */
 .course-card button {
-  width: 100%;
+  margin: 16px;
+
   padding: 12px;
-  background: #4fc3f7;
   border: none;
+  border-radius: 8px;
+
+  background: #4fc3f7;
   color: white;
-  font-size: 15px;
-  border-radius: 6px;
+
   cursor: pointer;
+  font-size: 15px;
   transition: background 0.3s ease;
 }
 
 .course-card button:hover {
-  background: #39b0e0;
+  background: #29b6f6;
 }
-
 /* ================================================= */
 /* ================= RESPONSIVE ==================== */
 /* ================================================= */
