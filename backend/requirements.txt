@@ -4,4 +4,4 @@ psycopg2-binary
 flask-sqlalchemy
 werkzeug
 gunicorn
-
+Flask-Mail
