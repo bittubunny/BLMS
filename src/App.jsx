@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import Certificate from "./pages/Certificate";
 import EditProfile from "./pages/EditProfile"; // import the new page
 import Announcements from "./pages/Announcements";
+import Profile from "./pages/Profile";
+
 import Users from "./admin/Users";
 // admin (separate, not part of main flow)
 import Add_Course from "./admin/Add_Course";
@@ -31,6 +33,7 @@ function App() {
        <Route path="/certificate/:id" element={<Certificate />} />
         <Route path="/edit-profile" element={<EditProfile />} /> {/* new route */}
         <Route path="/announcements" element={<Announcements />} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* ADMIN ONLY – MANUAL ACCESS */}
         <Route path="/admin/add-course" element={<Add_Course />} />
