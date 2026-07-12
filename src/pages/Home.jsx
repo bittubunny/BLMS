@@ -445,61 +445,81 @@ const Home = () => {
 
             {/* ================= ABOUT COMPANY ================= */}
 
-      <section
-        className="section"
-        id="company"
-      >
 
-        <h2>🌍 About BLMS</h2>
+{/* ================= WHY CHOOSE BLMS ================= */}
 
-        <p>
-          BLMS (Basic Learning Management System) is designed to make learning
-          simple, engaging and career-focused. From beginner-friendly lessons
-          to advanced skill development, our platform empowers students to
-          learn at their own pace while preparing for real-world opportunities.
-        </p>
+<section
+  className="section"
+  id="company"
+>
 
-        <div className="company-stats">
+  <h2>🌍 Why Choose BLMS?</h2>
 
-          <div className="stat">
-            <div className="stat-icon">🎓</div>
+  <p>
+    Everything you need to learn, grow, earn certificates,
+    and launch your career—all in one platform.
+  </p>
 
-            <div>
-              <h3>120+</h3>
-              <p>Courses Available</p>
-            </div>
-          </div>
+  <div className="why-grid">
 
-          <div className="stat">
-            <div className="stat-icon">👨‍🎓</div>
+    <div className="why-card">
 
-            <div>
-              <h3>15,000+</h3>
-              <p>Active Learners</p>
-            </div>
-          </div>
+      <div className="why-icon">📚</div>
 
-          <div className="stat">
-            <div className="stat-icon">🏆</div>
+      <h3>Learn</h3>
 
-            <div>
-              <h3>8,000+</h3>
-              <p>Certificates Issued</p>
-            </div>
-          </div>
+      <p>
+        Access high-quality courses designed to help you master
+        real-world skills at your own pace.
+      </p>
 
-          <div className="stat">
-            <div className="stat-icon">💼</div>
+    </div>
 
-            <div>
-              <h3>500+</h3>
-              <p>Career Opportunities</p>
-            </div>
-          </div>
+    <div className="why-card">
 
-        </div>
+      <div className="why-icon">🏆</div>
 
-      </section>
+      <h3>Earn</h3>
+
+      <p>
+        Receive professional certificates that showcase your
+        achievements and boost your resume.
+      </p>
+
+    </div>
+
+    <div className="why-card">
+
+      <div className="why-icon">💼</div>
+
+      <h3>Grow</h3>
+
+      <p>
+        Explore exciting job opportunities and take the next
+        step in your professional journey.
+      </p>
+
+    </div>
+
+    <div className="why-card">
+
+      <div className="why-icon">🚀</div>
+
+      <h3>Achieve</h3>
+
+      <p>
+        Track your progress, stay motivated, and transform
+        your learning into real success.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+      
 
       {/* ================= CONTACT ================= */}
 
