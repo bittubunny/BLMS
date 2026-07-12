@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
+import {
+  FaInstagram,
+  FaFacebookF,
+  FaLinkedinIn,
+  FaEnvelope
+} from "react-icons/fa";
 
 // =======================
 // Highlight Component
@@ -30,9 +36,23 @@ const HighlightText = ({ text, highlight }) => {
 const Home = () => {
   const navigate = useNavigate();
 
+  // Existing state
   const [user, setUser] = useState(null);
   const [openProfile, setOpenProfile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // NEW
+  const API_BASE = "https://blms-fnj5.onrender.com";
+
+  const [contactData, setContactData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [sending, setSending] = useState(false);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -45,15 +65,61 @@ const Home = () => {
     setUser(JSON.parse(storedUser));
   }, [navigate]);
 
+  // Existing function
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/");
+  };
+
+  // NEW
+  const handleContactChange = (e) => {
+    setContactData({
+      ...contactData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const sendMessage = async (e) => {
+    e.preventDefault();
+
+    setSending(true);
+    setStatus("");
+
+    try {
+      const res = await fetch(`${API_BASE}/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus("success");
+
+        setContactData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        setStatus(data.message);
+      }
+    } catch {
+      setStatus("Something went wrong.");
+    }
+
+    setSending(false);
   };
 
   if (!user) return null;
 
   return (
     <div className="home-container">
+      ...
 
       {/* ================= NAVBAR ================= */}
 
@@ -523,92 +589,142 @@ const Home = () => {
 
       {/* ================= CONTACT ================= */}
 
-      <section
-        className="section"
-        id="contact"
-      >
+     <section className="section" id="contact">
 
-        <h2>📞 Contact Us</h2>
+<h2>📩 Contact Us</h2>
 
-        <p>
-          We'd love to hear from you. Reach out anytime.
-        </p>
+<p>
+Have questions, feedback, or suggestions? We'd love to hear from you.
+</p>
 
-        <div className="contact-grid">
+<div className="contact-container">
 
-          <div className="contact-item">
+<div className="contact-left">
 
-            <div className="contact-icon">
-              📧
-            </div>
+<h3>Connect With BLMS</h3>
 
-            <div>
+<p>
+Follow us on social media and stay updated with the latest courses,
+certificates, and career opportunities.
+</p>
 
-              <h3>Email</h3>
+<a
+href="https://instagram.com/"
+target="_blank"
+rel="noreferrer"
+className="social-card"
+>
+<FaInstagram />
+<span>Instagram</span>
+</a>
 
-              <div className="contact-info">
-                support@blms.com
-              </div>
+<a
+href="https://facebook.com/"
+target="_blank"
+rel="noreferrer"
+className="social-card"
+>
+<FaFacebookF />
+<span>Facebook</span>
+</a>
 
-            </div>
+<a
+href="https://linkedin.com/"
+target="_blank"
+rel="noreferrer"
+className="social-card"
+>
+<FaLinkedinIn />
+<span>LinkedIn</span>
+</a>
 
-          </div>
+<a
+href="mailto:chbharath0779@gmail.com"
+className="social-card"
+>
+<FaEnvelope />
+<span>Email</span>
+</a>
 
-          <div className="contact-item">
+</div>
 
-            <div className="contact-icon">
-              📞
-            </div>
+<div className="contact-right">
 
-            <div>
+<form onSubmit={sendMessage}>
 
-              <h3>Phone</h3>
+<input
+type="text"
+placeholder="Your Name"
+name="name"
+value={contactData.name}
+onChange={handleContactChange}
+required
+/>
 
-              <div className="contact-info">
-                +91 98765 43210
-              </div>
+<input
+type="email"
+placeholder="Your Email"
+name="email"
+value={contactData.email}
+onChange={handleContactChange}
+required
+/>
 
-            </div>
+<input
+type="text"
+placeholder="Subject"
+name="subject"
+value={contactData.subject}
+onChange={handleContactChange}
+required
+/>
 
-          </div>
+<textarea
+placeholder="Message"
+rows="6"
+name="message"
+value={contactData.message}
+onChange={handleContactChange}
+required
+/>
 
-          <div className="contact-item">
+<button
+type="submit"
+disabled={sending}
+>
 
-            <div className="contact-icon">
-              📍
-            </div>
+{sending ? "Sending..." : "Send Message"}
 
-            <div>
+</button>
 
-              <h3>Address</h3>
+{status === "success" && (
 
-              <div className="contact-info">
-                Hyderabad, Telangana
-              </div>
+<p className="success-text">
 
-            </div>
+✅ Message sent successfully!
 
-          </div>
+</p>
 
-          <div className="contact-item">
+)}
 
-            <div className="contact-icon">
-              🌐
-            </div>
+{status &&
+status !== "success" && (
 
-            <div>
+<p className="error-text">
 
-              <h3>Website</h3>
+{status}
 
-              <div className="contact-info">
-                www.blms.com
-              </div>
+</p>
 
-            </div>
+)}
 
-          </div>
+</form>
 
-        </div>
+</div>
+
+</div>
+
+</section>
 
       </section>
 
