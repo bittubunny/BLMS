@@ -54,6 +54,8 @@ const EditProfile = () => {
 
     localStorage.setItem(`profile-${user.email}`, JSON.stringify(profileData));
     alert("Profile updated successfully!");
+
+navigate("/profile");
   };
 
   return (
