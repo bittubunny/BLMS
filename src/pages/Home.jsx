@@ -89,36 +89,36 @@ const Home = () => {
             className="profile"
             onClick={() => setOpenProfile(!openProfile)}
           >
-            <div className="profile-icon">
-              👤
-            </div>
+<div className="profile-icon">
+  {user.name.charAt(0).toUpperCase()}
+</div>
 
             <span>{user.name}</span>
           </div>
 
-          {openProfile && (
+        {openProfile && (
 
-            <div className="profile-dropdown">
+  <div className="profile-dropdown">
 
-              <Link to="/edit-profile">
-                Edit Profile
-              </Link>
+    <Link to="/profile">
+      👤 My Profile
+    </Link>
 
-              <Link to="/dashboard">
-                Dashboard
-              </Link>
+    <Link to="/dashboard">
+      📊 Dashboard
+    </Link>
 
-              <Link to="/announcements">
-                Job Portal
-              </Link>
+    <Link to="/announcements">
+      💼 Job Portal
+    </Link>
 
-              <button onClick={handleLogout}>
-                Logout
-              </button>
+    <button onClick={handleLogout}>
+      🚪 Logout
+    </button>
 
-            </div>
+  </div>
 
-          )}
+)}
 
         </div>
 
