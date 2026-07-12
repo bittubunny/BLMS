@@ -6,6 +6,7 @@ from models import db, User, Course, UserProgress, Job
 import os
 import json
 import time
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 
@@ -36,6 +37,16 @@ if DATABASE_URL.startswith("postgres://"):
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# ---------------- MAIL ----------------
+
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER")
+app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
+app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS") == "True"
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME")
+
+mail = Mail(app)
 
 # Supabase SSL
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -382,6 +393,70 @@ def delete_job(job_id):
     db.session.commit()
 
     return jsonify({"message": "Job deleted"}), 200
+
+
+
+# ---------------- CONTACT ----------------
+
+@app.route("/contact", methods=["POST"])
+def contact():
+
+    try:
+
+        data = request.get_json()
+
+        name = data.get("name", "").strip()
+        email = data.get("email", "").strip()
+        subject = data.get("subject", "").strip()
+        message = data.get("message", "").strip()
+
+        if not all([name, email, subject, message]):
+
+            return jsonify({
+                "message": "All fields are required."
+            }), 400
+
+        msg = Message(
+
+            subject=f"BLMS Contact - {subject}",
+
+            recipients=["chbharath0779@gmail.com"]
+
+        )
+
+        msg.body = f"""
+New message received from BLMS Contact Form
+
+----------------------------------------
+
+Name: {name}
+
+Email: {email}
+
+Subject: {subject}
+
+----------------------------------------
+
+Message:
+
+{message}
+
+----------------------------------------
+"""
+
+        mail.send(msg)
+
+        return jsonify({
+            "message": "Message sent successfully."
+        }), 200
+
+    except Exception as e:
+
+        print(e)
+
+        return jsonify({
+            "message": "Unable to send message."
+        }), 500
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
