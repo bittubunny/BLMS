@@ -1,103 +1,353 @@
-.edit-profile-page {
-  max-width: 700px;
-  margin: 50px auto;
-  padding: 30px 40px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+/* ==========================================
+   PAGE
+========================================== */
+
+.edit-profile-page{
+    min-height:100vh;
+    padding:60px 20px;
+
+    background:
+    radial-gradient(circle at top left,#dff3ff 0%,transparent 35%),
+    radial-gradient(circle at bottom right,#eef4ff 0%,transparent 40%),
+    #f7fbff;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
 }
 
-.edit-profile-page h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #2c3e50;
+.edit-profile-page h1{
+    font-size:42px;
+    font-weight:800;
+    color:#111827;
+    margin-bottom:35px;
 }
 
-.edit-profile-form label {
-  display: block;
-  margin-bottom: 20px;
-  font-weight: 500;
-  color: #34495e;
+/* ==========================================
+   FORM
+========================================== */
+
+.edit-profile-form{
+
+    width:100%;
+    max-width:820px;
+
+    background:rgba(255,255,255,.82);
+
+    backdrop-filter:blur(20px);
+
+    border-radius:28px;
+
+    padding:45px;
+
+    border:1px solid rgba(255,255,255,.5);
+
+    box-shadow:0 20px 50px rgba(0,0,0,.08);
+
+    animation:fadeUp .7s ease;
 }
+
+/* ==========================================
+   LABELS
+========================================== */
+
+.edit-profile-form label{
+
+    display:flex;
+    flex-direction:column;
+
+    font-weight:700;
+
+    color:#374151;
+
+    margin-bottom:24px;
+
+    gap:10px;
+}
+
+/* ==========================================
+   INPUTS
+========================================== */
 
 .edit-profile-form input,
-.edit-profile-form select,
-.edit-profile-form textarea {
-  width: 100%;
-  padding: 10px 14px;
-  margin-top: 6px;
-  border-radius: 8px;
-  border: 1px solid #dcdcdc;
-  font-size: 15px;
-  font-family: inherit;
-  box-sizing: border-box;
+.edit-profile-form textarea,
+.edit-profile-form select{
+
+    width:100%;
+
+    padding:15px 18px;
+
+    border:none;
+
+    border-radius:16px;
+
+    outline:none;
+
+    background:#ffffff;
+
+    font-size:15px;
+
+    color:#374151;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
 }
 
-.edit-profile-form textarea {
-  resize: vertical;
+.edit-profile-form textarea{
+
+    resize:vertical;
+    min-height:130px;
 }
 
-.location-fields {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+.edit-profile-form input:focus,
+.edit-profile-form textarea:focus,
+.edit-profile-form select:focus{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 30px rgba(37,99,235,.18);
+
+    border:2px solid #2563eb;
 }
 
-.location-fields label {
-  flex: 1 1 45%;
+/* ==========================================
+   LOCATION
+========================================== */
+
+.location-fields{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
 }
 
-.social-link-input {
-  display: flex;
-  gap: 10px;
-  margin-top: 6px;
-  align-items: center;
+/* ==========================================
+   SOCIAL LINKS
+========================================== */
+
+.social-link-input{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    margin-bottom:15px;
 }
 
-.social-link-input input {
-  flex: 1;
+.social-link-input input{
+
+    flex:1;
 }
 
-.social-link-input button {
-  padding: 5px 10px;
-  background: #e74c3c;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
+.social-link-input button{
+
+    width:48px;
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    background:#fee2e2;
+
+    transition:.3s;
 }
 
-.social-link-input button:hover {
-  background: #c0392b;
+.social-link-input button:hover{
+
+    background:#ef4444;
+
+    color:white;
+
+    transform:scale(1.05);
 }
 
-.add-link-btn {
-  margin-top: 10px;
-  padding: 8px 14px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+/* ==========================================
+   ADD LINK BUTTON
+========================================== */
+
+.add-link-btn{
+
+    margin-top:10px;
+
+    width:fit-content;
+
+    padding:13px 24px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    background:white;
+
+    color:#2563eb;
+
+    font-weight:700;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:.3s;
 }
 
-.add-link-btn:hover {
-  background: #2980b9;
+.add-link-btn:hover{
+
+    transform:translateY(-3px);
+
+    background:#2563eb;
+
+    color:white;
+
+    box-shadow:0 15px 30px rgba(37,99,235,.25);
 }
 
-.save-btn {
-  display: block;
-  margin: 30px auto 0;
-  padding: 12px 25px;
-  background: #27ae60;
-  color: white;
-  font-size: 16px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
+/* ==========================================
+   SAVE BUTTON
+========================================== */
+
+.save-btn{
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    color:white;
+
+    background:linear-gradient(135deg,#2563eb,#4fc3f7);
+
+    transition:.35s;
 }
 
-.save-btn:hover {
-  background: #1e8449;
+.save-btn:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 18px 40px rgba(37,99,235,.28);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:768px){
+
+    .edit-profile-page{
+
+        padding:40px 15px;
+    }
+
+    .edit-profile-page h1{
+
+        font-size:34px;
+    }
+
+    .edit-profile-form{
+
+        padding:30px 22px;
+    }
+
+    .location-fields{
+
+        grid-template-columns:1fr;
+    }
+
+    .social-link-input{
+
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .social-link-input button{
+
+        width:100%;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .edit-profile-page h1{
+
+        font-size:28px;
+    }
+
+    .edit-profile-form{
+
+        border-radius:22px;
+        padding:24px 18px;
+    }
+
+}
+
+/* ==========================================
+   ANIMATION
+========================================== */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+        transform:translateY(30px);
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+
+    background:#eef4ff;
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#4fc3f7;
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#2563eb;
+}
+
+::selection{
+
+    background:#2563eb;
+    color:white;
 }
